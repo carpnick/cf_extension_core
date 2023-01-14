@@ -38,6 +38,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./junit.xml
+          token: ${{ secrets.CODE_COV }}
           flags: unittests
           fail_ci_if_error: true
           verbose: true
