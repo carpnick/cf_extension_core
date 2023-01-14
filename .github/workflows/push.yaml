@@ -37,7 +37,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./junit.xml
+          files: ./coverage.xml
           token: ${{ secrets.CODE_COV }}
           flags: unittests
           fail_ci_if_error: true
