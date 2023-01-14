@@ -7,8 +7,6 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
-      # You can use PyPy versions in python-version.
-      # For example, pypy-2.7 and pypy-3.8
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
@@ -30,3 +28,8 @@ jobs:
           flake8 --max-line-length 120 src/
           echo "Running black"
           black src/ -l 120 --check
+
+      - name: Unit Tests
+        run: |
+          echo "Running pytest"   
+          pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
