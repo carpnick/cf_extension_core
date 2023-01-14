@@ -34,10 +34,10 @@ jobs:
           echo "Running pytest"   
           pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./junit.xml
-        flags: unittests
-        fail_ci_if_error: true
-        verbose: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./junit.xml
+          flags: unittests
+          fail_ci_if_error: true
+          verbose: true
