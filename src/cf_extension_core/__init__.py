@@ -9,7 +9,7 @@ from cf_extension_core.interface import (  # noqa: F401
     CustomResourceHelpers,
     DynamoTableCreator,
     DynamoDBValues,
-    generate_dynamo_resource
+    generate_dynamo_resource,
 )
 
 
