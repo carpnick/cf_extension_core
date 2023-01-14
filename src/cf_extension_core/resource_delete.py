@@ -1,62 +1,64 @@
-# pylint: disable=C0301,W0703,R1720,
-
 import logging
-
 import types
-from typing import Type, Literal, TYPE_CHECKING
-import cloudformation_cli_python_lib.exceptions
-from typing import Optional
+from typing import Type, Literal, TYPE_CHECKING, Optional
 
-from cf_extension_core.resource_base import ResourceBase as _ResourceBase
+from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
 
-from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest as _BaseResourceHandlerRequest
+from cf_extension_core.resource_base import ResourceBase
 
 if TYPE_CHECKING:
-    from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource as _DynamoDBServiceResource
+    from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
 else:
-    _DynamoDBServiceResource= object
+    DynamoDBServiceResource = object
 
 # Module Logger
 logger = logging.getLogger(__name__)
 
 
-class ResourceDelete(_ResourceBase):
+class ResourceDelete(ResourceBase):
     """
     Easily usable class that can be used to Delete resources in the custom resource code.
     """
+
     # #Delete Handler use case - WE THINK
-    # with dynamodb.resource_delete(request=self.request, primary_identifier=self._request.previousResourceState.ReadOnlyIdentifier) as DB:
+    # with dynamodb.resource_delete(request=self.request,
+    #                               primary_identifier=self._request.previousResourceState.ReadOnlyIdentifier) as DB:
     #
     #     #Arbitrary Code
     #     DB.update_model(model=self._callback_context["working_model"])
     #
 
-    def __init__(self,
-                 request: _BaseResourceHandlerRequest,
-                 db_resource: _DynamoDBServiceResource,
-                 primary_identifier: str,
-                 type_name: str):
+    def __init__(
+        self,
+        request: BaseResourceHandlerRequest,
+        db_resource: DynamoDBServiceResource,
+        primary_identifier: str,
+        type_name: str,
+    ):
 
-        super().__init__(request=request,
-                         db_resource=db_resource,
-                         primary_identifier=primary_identifier,
-                         type_name=type_name)
+        super().__init__(
+            request=request,
+            db_resource=db_resource,
+            primary_identifier=primary_identifier,
+            type_name=type_name,
+        )
         pass
 
-
-    def __enter__(self) -> 'ResourceDelete':
+    def __enter__(self) -> "ResourceDelete":
         logger.info("DynamoDelete Enter... ")
 
-        #Check to see if the row/resource is not found
+        # Check to see if the row/resource is not found
         self._not_found_check()
 
         logger.info("DynamoDelete Enter Completed")
         return self
 
-    def __exit__(self,
-                 exception_type: Optional[Type[BaseException]],
-                 exception_value: Optional[BaseException],
-                 traceback: Optional[types.TracebackType]) -> Literal[False]:
+    def __exit__(
+        self,
+        exception_type: Optional[Type[BaseException]],
+        exception_value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> Literal[False]:
 
         logger.info("DynamoDelete Exit...")
 
@@ -65,15 +67,14 @@ class ResourceDelete(_ResourceBase):
 
             self._db_item_delete()
         else:
-            #We failed in delete logic
+            # We failed in delete logic
             logger.info("Has Failure = True, row will not be deleted")
 
-            #Failed during delete of resource for any number of reasons
-            #Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
-            #Dont update the Row
-
+            # Failed during delete of resource for any number of reasons
+            # Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
+            # Dont update the Row
 
         logger.info("DynamoDelete Exit Completed")
 
-        #let exception flourish always
+        # let exception flourish always
         return False

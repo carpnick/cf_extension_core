@@ -1,5 +1,5 @@
 pytest
 boto3-stubs[essential]
 mypy
-pylint
+flake8
 black

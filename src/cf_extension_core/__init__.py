@@ -1,13 +1,16 @@
 import logging
 
-from cf_extension_core.interface import create_resource, \
-    update_resource, \
-    delete_resource, \
-    read_resource, \
-    list_resource, \
-    CustomResourceHelpers, \
-    DynamoTableCreator, \
-    DynamoDBValues
+from cf_extension_core.interface import (  # noqa: F401
+    create_resource,
+    update_resource,
+    delete_resource,
+    read_resource,
+    list_resource,
+    CustomResourceHelpers,
+    DynamoTableCreator,
+    DynamoDBValues,
+    generate_dynamo_resource
+)
 
 
 def default_package_logging_config() -> None:

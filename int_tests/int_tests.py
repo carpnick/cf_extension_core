@@ -4,9 +4,14 @@ from cloudformation_cli_python_lib import BaseResourceHandlerRequest
 from cloudformation_cli_python_lib.exceptions import *
 from gen_models import ResourceModel
 
+#Have to do this here
+boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
 
-#Internal
+# Internal
 import cf_extension_core as dynamo
+
+
+
 
 def return_handler_request(model, resource_identifier="myresourceidentifier",stack_id="arn:aws:cloudformation:us-west-2:123456789012:stack/teststack/51af3dc0-da77-11e4-872e-1234567db123"):
     return BaseResourceHandlerRequest(clientRequestToken='-',
@@ -71,7 +76,8 @@ def test_create_read_delete_ro():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource()) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -81,8 +87,9 @@ def test_create_read_delete_ro():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.read_resource(request=handler_request,
-                     type_name=return_type_name(),
-                     primary_identifier=model.GeneratedReadOnlyId) as DB:
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource(),
+                              primary_identifier=model.GeneratedReadOnlyId) as DB:
 
         #Fake read code
         newmodel = DB.read_model(ResourceModel)
@@ -95,8 +102,9 @@ def test_create_read_delete_ro():
 
 
     with dynamo.delete_resource(request=handler_request,
-                       type_name=return_type_name(),
-                       primary_identifier=model.GeneratedReadOnlyId) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),
+                                primary_identifier=model.GeneratedReadOnlyId) as DB:
 
         #You are supposed to be able to delete the resource with just the primary identifier
         # RO resource
@@ -111,7 +119,8 @@ def test_create_create_same_identifier():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -122,7 +131,8 @@ def test_create_create_same_identifier():
 
     try:
         with dynamo.create_resource(request=handler_request,
-                           type_name=return_type_name()) as DB:
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),) as DB:
 
            #Use same identifier
             DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
@@ -140,7 +150,8 @@ def test_create_list():
 
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource()) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -150,7 +161,9 @@ def test_create_list():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.list_resource(request=handler_request,
-                     type_name=return_type_name()) as DB:
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource()
+                              ) as DB:
 
         identifiers = DB.list_identifiers()
         assert len(identifiers)==1
@@ -164,7 +177,8 @@ def test_create_update_list():
 
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource()) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -175,13 +189,16 @@ def test_create_update_list():
 
     with dynamo.update_resource(request=handler_request,
                                 type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),
                                 primary_identifier=model.GeneratedReadOnlyId) as DB:
         pass
         DB.update_model(updated_model=model)
 
 
     with dynamo.list_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource()
+                              ) as DB:
 
         identifiers = DB.list_identifiers()
         assert len(identifiers)==1
@@ -195,7 +212,8 @@ def test_create_update_read():
 
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource()) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -206,13 +224,15 @@ def test_create_update_read():
 
     with dynamo.update_resource(request=handler_request,
                                 type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),
                                 primary_identifier=model.GeneratedReadOnlyId) as DB:
         pass
         DB.update_model(updated_model=model)
 
-
-    with dynamo.read_resource(primary_identifier=model.GeneratedReadOnlyId, request=handler_request,
-                       type_name=return_type_name()) as DB:
+    with dynamo.read_resource(primary_identifier=model.GeneratedReadOnlyId,
+                              request=handler_request,
+                              db_resource=dynamo.generate_dynamo_resource(),
+                              type_name=return_type_name()) as DB:
 
         mymodel = DB.read_model(model_type=ResourceModel)
         assert mymodel.GeneratedReadOnlyId == model.GeneratedReadOnlyId
@@ -230,8 +250,9 @@ def test_update_without_create():
 
     try:
         with dynamo.update_resource(request=handler_request,
-                           type_name=return_type_name(),
-                           primary_identifier=model.GeneratedReadOnlyId) as DB:
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),
+                                    primary_identifier=model.GeneratedReadOnlyId) as DB:
             pass
 
         assert False
@@ -250,7 +271,8 @@ def test_delete_create():
                                                                                                                     handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -261,12 +283,14 @@ def test_delete_create():
 
 
     with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                       request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                request=handler_request,
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         pass
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -286,7 +310,8 @@ def test_delete_update():
                                                                                                                     handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -297,14 +322,16 @@ def test_delete_update():
 
 
     with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                       request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                request=handler_request,
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         pass
 
     try:
         with dynamo.update_resource(primary_identifier= model.GeneratedReadOnlyId,
-                           request=handler_request,
-                           type_name=return_type_name()) as DB:
+                                    request=handler_request,
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),) as DB:
             model: ResourceModel = handler_request.desiredResourceState
 
             # Fake update code
@@ -323,7 +350,8 @@ def test_create_delete_read():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -333,15 +361,17 @@ def test_create_delete_read():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                       request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                request=handler_request,
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         pass
 
 
     try:
         with dynamo.read_resource(request=handler_request,
-                         type_name=return_type_name(),
-                         primary_identifier=model.GeneratedReadOnlyId) as DB:
+                                  type_name=return_type_name(),
+                                  db_resource=dynamo.generate_dynamo_resource(),
+                                  primary_identifier=model.GeneratedReadOnlyId) as DB:
 
             #Fake read code
             newmodel = DB.read_model(ResourceModel)
@@ -364,7 +394,8 @@ def test_create_delete_list():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -374,12 +405,14 @@ def test_create_delete_list():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                       request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                request=handler_request,
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         pass
 
     with dynamo.list_resource(request=handler_request,
-                     type_name=return_type_name()) as DB:
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource(),) as DB:
 
         ids = DB.list_identifiers()
 
@@ -393,7 +426,8 @@ def test_create_delete_delete():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -403,14 +437,16 @@ def test_create_delete_delete():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                       request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                request=handler_request,
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         pass
 
     try:
         with dynamo.delete_resource(primary_identifier=model.GeneratedReadOnlyId,
-                           request=handler_request,
-                           type_name=return_type_name()) as DB:
+                                    request=handler_request,
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),) as DB:
             pass
 
         assert False
@@ -428,7 +464,8 @@ def test_create_create_ro_resource():
     handler_request = return_handler_request(model=test_input_model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -438,7 +475,8 @@ def test_create_create_ro_resource():
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
 
         # Fake create code
         model.GroupId = "123"
@@ -455,7 +493,8 @@ def test_create_create_same_identifier_known_ahead_of_time():
     stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
-                       type_name=return_type_name()) as DB:
+                                type_name=return_type_name(),
+                                db_resource=dynamo.generate_dynamo_resource(),) as DB:
         model: ResourceModel = handler_request.desiredResourceState
 
         # Fake create code
@@ -466,8 +505,9 @@ def test_create_create_same_identifier_known_ahead_of_time():
 
     try:
         with dynamo.create_resource(request=handler_request,
-                           type_name=return_type_name(),
-                           primary_identifier=stable_identifier) as DB:
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),
+                                    primary_identifier=stable_identifier) as DB:
             logging.info("Got here")
             assert False
             #Creation code goes here accidentally creating a new one. - If we know identifier ahead of time, put it in the create call
@@ -483,11 +523,8 @@ if __name__ == "__main__":
 
     dynamo.default_package_logging_config()
 
-    boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
-
     # Use a special TABLE? - HACK alert
     dynamo.DynamoDBValues.TABLE_NAME = "aut-TEST"
-
 
     tests = [
         lambda: test_create_read_delete_ro() ,
@@ -506,7 +543,7 @@ if __name__ == "__main__":
     ]
 
     for test in tests:
-        dynamo.DynamoTableCreator(dynamo.interface._generate_resource_client()).delete_table()
+        dynamo.DynamoTableCreator(dynamo.interface.generate_dynamo_resource()).delete_table()
         test()
 
 
