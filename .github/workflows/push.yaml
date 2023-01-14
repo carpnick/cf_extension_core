@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      #Cache the poetry installation too
+      #Cache the poetry installation
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
@@ -27,27 +27,26 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-
+      #Python environment
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
 
-
-
       #Plan for cached dependencies - speeds up builds by over 1 minute
-      - name: Load cached venv
+      #Cache busted when poetry.lock changes - automated change
+      - name: Load cached Dependencies
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
+      #CI portion of the Job
       - name: Static Analysis and Code Formatting
         run: |
           source .venv/bin/activate
@@ -73,5 +72,14 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-
       #Assuming above succeeds we need CD to pypi now.
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y_%m_%d_%H_%M_%S')" >> $GITHUB_ENV #"2022_12_11_01_42_20"
+      - name: Set version
+        run: |
+          current_version=`poetry version --short`
+          current_version="$current_version.dev$NOW"
+          poetry version current_version
+      - name: Build and Publish
+        run: |
+          poetry build
