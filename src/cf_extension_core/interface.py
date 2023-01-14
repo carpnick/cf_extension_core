@@ -3,7 +3,7 @@ from cloudformation_cli_python_lib.interface import (
 )
 import boto3
 
-from typing import TYPE_CHECKING, Optional as _Optional, cast
+from typing import TYPE_CHECKING, Optional as _Optional
 
 import cf_extension_core.resource_update as _resource_update
 import cf_extension_core.resource_create as _resource_create

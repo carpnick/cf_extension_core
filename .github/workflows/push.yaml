@@ -24,6 +24,9 @@ jobs:
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
       - name: Static Analysis and Code Formatting
         run: |
+          echo "Running mypy"
           mypy src/
+          echo "Running flake8"
           flake8 --max-line-length 120 src/
+          echo "Running black"
           black src/ -l 120 --check
