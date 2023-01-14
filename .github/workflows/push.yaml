@@ -79,7 +79,7 @@ jobs:
         run: |
           current_version=`poetry version --short`
           current_version="$current_version.dev$NOW"
-          poetry version current_version
+          poetry version $current_version
       - name: Build and Publish
         run: |
           poetry build
