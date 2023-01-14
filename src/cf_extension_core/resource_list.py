@@ -3,6 +3,7 @@
 import logging
 
 import types
+import typing
 
 from typing import Type, Literal, TYPE_CHECKING
 import cloudformation_cli_python_lib.exceptions
@@ -41,7 +42,7 @@ class ResourceList(_ResourceBase):
                          type_name=type_name)
 
 
-    def list_identifiers(self) -> list[str]:
+    def list_identifiers(self) -> typing.List[str]:
 
         return self._db_item_list_primary_identifiers_for_cr_type()
 
