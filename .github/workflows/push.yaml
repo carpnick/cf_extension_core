@@ -22,10 +22,10 @@ jobs:
           curl -sSL https://install.python-poetry.org | python -
           poetry --version
           poetry install --no-root
-          source $(poetry env info --path)/bin/activate
 
       - name: Static Analysis and Code Formatting
         run: |
+          source $(poetry env info --path)/bin/activate
           echo "Running mypy"
           mypy src/
           echo "Running flake8"
