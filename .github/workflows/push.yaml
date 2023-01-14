@@ -72,6 +72,9 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
           verbose: true
+      - name: Build
+        run: |
+          poetry build
 
   publish:
     needs: build
