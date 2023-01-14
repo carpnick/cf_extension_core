@@ -76,6 +76,7 @@ jobs:
       - name: Set current date as env variable
         run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV #"2022_12_11_01_42_20"
       - name: Set version
+        if: github.ref != 'refs/heads/master'
         run: |
           current_version=`poetry version --short`
           current_version="$current_version.dev$NOW"
