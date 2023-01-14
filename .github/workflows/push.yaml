@@ -74,7 +74,7 @@ jobs:
 
       #Assuming above succeeds we need CD to pypi now.
       - name: Set current date as env variable
-        run: echo "NOW=$(date +'%Y_%m_%d_%H_%M_%S')" >> $GITHUB_ENV #"2022_12_11_01_42_20"
+        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV #"2022_12_11_01_42_20"
       - name: Set version
         run: |
           current_version=`poetry version --short`
