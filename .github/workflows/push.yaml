@@ -16,6 +16,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -47,6 +48,7 @@ jobs:
       - name: Unit Tests
         run: |
           echo "Running pytest"   
+          source .venv/bin/activate
           pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
 
       - name: Upload coverage to Codecov
