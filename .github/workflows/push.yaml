@@ -19,7 +19,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+          curl -sSL https://install.python-poetry.org | python -
+          poetry --version
+          poetry install --no-root
+
       - name: Static Analysis and Code Formatting
         run: |
           echo "Running mypy"

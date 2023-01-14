@@ -14,3 +14,19 @@
   - dynamodb:UpdateTable
   - dynamodb:DescribeTable
   - dynamodb:Scan
+
+
+# Development
+- Use of poetry
+- ```commandline
+curl -sSL https://install.python-poetry.org | python3 -
+export PATH="/Users/nicholascarpenter/.local/bin:$PATH"
+poetry --version
+poetry add boto3
+
+poetry add --group dev  pytest
+
+poetry build
+poetry config pypi-token.pypi ""
+poetry publish
+```
