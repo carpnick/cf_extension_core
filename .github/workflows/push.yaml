@@ -13,11 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      #Cache the poetry installation too
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local  # the path depends on the OS
+          key: poetry-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-0 #Increment to break cache
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
+
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -26,6 +35,8 @@ jobs:
           cache: 'poetry'
 
 
+
+      #Plan for cached dependencies - speeds up builds by over 1 minute
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
@@ -61,3 +72,6 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
           verbose: true
+
+
+      #Assuming above succeeds we need CD to pypi now.
