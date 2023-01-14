@@ -26,6 +26,7 @@ poetry add boto3
 
 poetry add --group dev  pytest
 
+poetry install --no-root
 poetry build
 poetry config pypi-token.pypi ""
 poetry publish
