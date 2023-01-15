@@ -223,18 +223,3 @@ class CustomResourceHelpers:
             if callback_context["resource_entry_end_time"] > datetime.datetime.utcnow():
                 # If resource end time is greater than now we need to return failure due to timeout
                 raise exceptions.InternalFailure(" Timed out trying to create/update/delete resource.")
-
-    @staticmethod
-    def initialize_handler(
-        callback_context: MutableMapping[str, Any],
-        total_allowed_time_in_minutes: int,
-    ) -> None:
-
-        # TODO: Consider overriding the Table name based on Type Name here
-
-        CustomResourceHelpers._callback_add_resource_end_time(
-            callback_context=callback_context,
-            total_allowed_time_in_minutes=total_allowed_time_in_minutes,
-        )
-        CustomResourceHelpers._callback_add_handler_entry_time(callback_context=callback_context)
-        CustomResourceHelpers._return_failure_due_to_timeout(callback_context)

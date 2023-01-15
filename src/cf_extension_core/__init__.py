@@ -1,4 +1,5 @@
 import logging
+from typing import MutableMapping, Any
 
 from cf_extension_core.interface import (  # noqa: F401
     create_resource,
@@ -7,13 +8,26 @@ from cf_extension_core.interface import (  # noqa: F401
     read_resource,
     list_resource,
     CustomResourceHelpers,
-    DynamoTableCreator,
-    DynamoDBValues,
     generate_dynamo_resource,
 )
 
 
-def default_package_logging_config() -> None:
+def initialize_handler(
+        callback_context: MutableMapping[str, Any],
+        total_allowed_time_in_minutes: int,
+) -> None:
+    # TODO: Consider overriding the Table name based on Type Name here
+    _default_package_logging_config()
+
+    CustomResourceHelpers._callback_add_resource_end_time(
+        callback_context=callback_context,
+        total_allowed_time_in_minutes=total_allowed_time_in_minutes,
+    )
+    CustomResourceHelpers._callback_add_handler_entry_time(callback_context=callback_context)
+    CustomResourceHelpers._return_failure_due_to_timeout(callback_context)
+
+
+def _default_package_logging_config() -> None:
     """
     Helps setup default logging config for custom resources
     :return:

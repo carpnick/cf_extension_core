@@ -4,9 +4,6 @@ from cloudformation_cli_python_lib import BaseResourceHandlerRequest
 from cloudformation_cli_python_lib.exceptions import *
 from gen_models import ResourceModel
 
-#Have to do this here
-boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
-
 # Internal
 import cf_extension_core as dynamo
 
@@ -516,15 +513,21 @@ def test_create_create_same_identifier_known_ahead_of_time():
         assert True
 
 if __name__ == "__main__":
+
+    from cf_extension_core.constants import DynamoDBValues
+    from cf_extension_core.dynamo_table_creator import DynamoTableCreator
+
     format_string = "%(asctime)s - %(process)d - %(levelname)s - %(filename)s - %(message)s"
     logging.basicConfig(
         format=format_string,
         level=logging.INFO)
 
-    dynamo.default_package_logging_config()
+    dynamo._default_package_logging_config()
 
     # Use a special TABLE? - HACK alert
-    dynamo.DynamoDBValues.TABLE_NAME = "aut-TEST"
+    DynamoDBValues.TABLE_NAME = "aut-TEST"
+
+    boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
 
     tests = [
         lambda: test_create_read_delete_ro() ,
@@ -543,7 +546,7 @@ if __name__ == "__main__":
     ]
 
     for test in tests:
-        dynamo.DynamoTableCreator(dynamo.interface.generate_dynamo_resource()).delete_table()
+        DynamoTableCreator(dynamo.interface.generate_dynamo_resource()).delete_table()
         test()
 
 

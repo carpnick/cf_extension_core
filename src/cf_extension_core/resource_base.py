@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 class ResourceBase:
 
-    T = TypeVar("T", bound=Optional[_BaseModel])
+    _T = TypeVar("_T", bound=Optional[_BaseModel])
 
     def __init__(
         self,
@@ -49,28 +49,28 @@ class ResourceBase:
         DynamoTableCreator(self._db_resource).create_standard_table()
 
     # Business logic for saving Model to Dynamo for RO use cases primarily#######
-    class ResourceData:
+    class _ResourceData:
         _HELPER_KEY = "SleJXVw-6uvCUbd3whNDafJZ-Fc2UU0iQ1NiRCDY2dY="
-        T = TypeVar("T", bound=Optional[_BaseModel])
+        _T = TypeVar("_T", bound=Optional[_BaseModel])
 
         @staticmethod
-        def _model_to_string(model: T) -> str:
+        def _model_to_string(model: _T) -> str:
 
             # MODEL is not serializable
             #
             mystr = json.dumps(model._serialize())  # type: ignore
-            return Fernet(ResourceBase.ResourceData._HELPER_KEY.encode()).encrypt(mystr.encode()).decode()
+            return Fernet(ResourceBase._ResourceData._HELPER_KEY.encode()).encrypt(mystr.encode()).decode()
 
         # Read Only use case - we need to handle
         @staticmethod
         def _model_from_string(
             modelstr: str,
-            class_type: Type[T],
+            class_type: Type[_T],
         ) -> Any:
             try:
-                mystr = Fernet(ResourceBase.ResourceData._HELPER_KEY.encode()).decrypt(modelstr.encode()).decode()
+                mystr = Fernet(ResourceBase._ResourceData._HELPER_KEY.encode()).decrypt(modelstr.encode()).decode()
             except InvalidToken as exc:
-                raise ResourceBase.ResourceData.DecryptionException(exc.args) from exc
+                raise ResourceBase._ResourceData.DecryptionException(exc.args) from exc
 
             mymapping = json.loads(mystr)
 
@@ -101,7 +101,7 @@ class ResourceBase:
     # Insert Requests#######
     def _db_item_insert_without_overwrite(
         self,
-        model: T,
+        model: _T,
     ) -> None:
 
         the_table = self._dynamo_db_table()
@@ -111,7 +111,7 @@ class ResourceBase:
             constants.RowColumnNames.STACK_NAME: self._request.stackId,
             constants.RowColumnNames.RESOURCE_NAME: self._request.logicalResourceIdentifier,
             constants.RowColumnNames.LASTUPDATED_NAME: self._current_time(),
-            constants.RowColumnNames.MODEL_NAME: ResourceBase.ResourceData._model_to_string(model),
+            constants.RowColumnNames.MODEL_NAME: ResourceBase._ResourceData._model_to_string(model),
             constants.RowColumnNames.TYPE_NAME: self._type_name,
         }
 
@@ -132,13 +132,13 @@ class ResourceBase:
     # POST Requests#######
     def _db_item_update_model(
         self,
-        model: T,
+        model: _T,
     ) -> None:
 
         logger.info("_db_item_update_model called")
         the_table = self._dynamo_db_table()
 
-        model_str = ResourceBase.ResourceData._model_to_string(model)
+        model_str = ResourceBase._ResourceData._model_to_string(model)
 
         the_table.update_item(
             Key={constants.RowColumnNames.PRIMARY_IDENTIFIER_NAME: self._get_primary_identifier()},
@@ -183,7 +183,7 @@ class ResourceBase:
 
     def _db_item_get_model(
         self,
-        model_type: Type[T],
+        model_type: Type[_T],
     ) -> Any:
 
         logger.info("_db_item_get_model called")
@@ -198,7 +198,7 @@ class ResourceBase:
         # Get the data out of it
         random_str = cast(str, item[constants.RowColumnNames.MODEL_NAME])
 
-        return ResourceBase.ResourceData._model_from_string(random_str, class_type=model_type)
+        return ResourceBase._ResourceData._model_from_string(random_str, class_type=model_type)
 
     def _db_item_list_primary_identifiers_for_cr_type(self):
         if self._type_name is None:

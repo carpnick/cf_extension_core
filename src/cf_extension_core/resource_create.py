@@ -72,7 +72,7 @@ class ResourceCreate(_ResourceBase):
         self._primary_identifier = primary_identifier
         self._current_model = current_model
 
-    def duplicate_primary_identifier(self) -> None:
+    def _duplicate_primary_identifier(self) -> None:
         if self._db_item_exists():
             raise cloudformation_cli_python_lib.exceptions.AlreadyExists(
                 type_name=self._type_name, identifier=self._get_primary_identifier()
@@ -85,7 +85,7 @@ class ResourceCreate(_ResourceBase):
         # Use case - sometimes the primary identifier is user input instead of a created resource
         # Real world example - S3 Bucket Name...
         if self._primary_identifier is not None:
-            self.duplicate_primary_identifier()
+            self._duplicate_primary_identifier()
         else:
             # We havent created the primary identifier yet or its not input - so cant do anything about it yet....
             pass
@@ -119,7 +119,7 @@ class ResourceCreate(_ResourceBase):
             else:
                 # Check if row exists - if it does we need to fail out correctly
                 if self._primary_identifier is not None:
-                    self.duplicate_primary_identifier()
+                    self._duplicate_primary_identifier()
 
                 logger.info("Row being created")
 
