@@ -13,8 +13,8 @@ from cf_extension_core.interface import (  # noqa: F401
 
 
 def initialize_handler(
-        callback_context: MutableMapping[str, Any],
-        total_allowed_time_in_minutes: int,
+    callback_context: MutableMapping[str, Any],
+    total_allowed_time_in_minutes: int,
 ) -> None:
     # TODO: Consider overriding the Table name based on Type Name here
     _default_package_logging_config()
