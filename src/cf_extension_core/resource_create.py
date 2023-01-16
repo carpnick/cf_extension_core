@@ -41,19 +41,17 @@ class ResourceCreate(_ResourceBase):
         self,
         request: BaseResourceHandlerRequest,
         type_name: str,
-        db_resource: DynamoDBServiceResource,
-        primary_identifier: Optional[str] = None,
+        db_resource: DynamoDBServiceResource
     ):
 
         super().__init__(
             request=request,
             db_resource=db_resource,
-            primary_identifier=primary_identifier,
+            primary_identifier=None,
             type_name=type_name,
         )
 
         self._set_resource_created_called = False
-        self._primary_identifier = primary_identifier
         self._current_model: Optional[BaseModel] = None
 
     def set_resource_created(
@@ -82,13 +80,17 @@ class ResourceCreate(_ResourceBase):
         logger.info("DynamoCreate Enter... ")
 
         # If primary identifier is already set (known with user input) - we need to check if the row already exists
-        # Use case - sometimes the primary identifier is user input instead of a created resource
         # Real world example - S3 Bucket Name...
-        if self._primary_identifier is not None:
-            self._duplicate_primary_identifier()
-        else:
-            # We havent created the primary identifier yet or its not input - so cant do anything about it yet....
-            pass
+
+        # NO CANNOT do this - If a primary identifier is known ahead of time and a reinvoke happens -
+        # this will fail here
+
+        # We only can call duplicate if we say we created another one
+        # In the example real world case - the resource provider must check to
+        # see if resource already exists with desired name/primary identifier if possible or fail out appropriately.
+
+        # if self._primary_identifier is not None:
+        #     self._duplicate_primary_identifier()
 
         logger.info("DynamoCreate Enter Complete")
         return self

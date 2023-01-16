@@ -503,14 +503,12 @@ def test_create_create_same_identifier_known_ahead_of_time():
     try:
         with dynamo.create_resource(request=handler_request,
                                     type_name=return_type_name(),
-                                    db_resource=dynamo.generate_dynamo_resource(),
-                                    primary_identifier=stable_identifier) as DB:
+                                    db_resource=dynamo.generate_dynamo_resource()) as DB:
             logging.info("Got here")
-            assert False
-            #Creation code goes here accidentally creating a new one. - If we know identifier ahead of time, put it in the create call
+            assert True
 
-    except AlreadyExists:
-        assert True
+    except Exception:
+        assert False, "This needs to be allowed due to reinvoke use case"
 
 if __name__ == "__main__":
 

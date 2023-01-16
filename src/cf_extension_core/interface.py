@@ -3,7 +3,7 @@ from cloudformation_cli_python_lib.interface import (
 )
 import boto3
 
-from typing import TYPE_CHECKING, Optional as _Optional
+from typing import TYPE_CHECKING
 
 import cf_extension_core.resource_update as _resource_update
 import cf_extension_core.resource_create as _resource_create
@@ -30,14 +30,12 @@ def generate_dynamo_resource() -> _DynamoDBServiceResource:
 def create_resource(
     request: _BaseResourceHandlerRequest,
     type_name: str,
-    db_resource: _DynamoDBServiceResource,
-    primary_identifier: _Optional[str] = None,
+    db_resource: _DynamoDBServiceResource
 ) -> _resource_create.ResourceCreate:
 
     return _resource_create.ResourceCreate(
         db_resource=db_resource,
         type_name=type_name,
-        primary_identifier=primary_identifier,
         request=request,
     )
 
