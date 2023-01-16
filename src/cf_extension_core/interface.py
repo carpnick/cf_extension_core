@@ -30,7 +30,7 @@ def generate_dynamo_resource() -> _DynamoDBServiceResource:
 def create_resource(
     request: _BaseResourceHandlerRequest,
     type_name: str,
-    db_resource: _DynamoDBServiceResource
+    db_resource: _DynamoDBServiceResource,
 ) -> _resource_create.ResourceCreate:
 
     return _resource_create.ResourceCreate(

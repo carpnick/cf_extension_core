@@ -41,7 +41,7 @@ class ResourceCreate(_ResourceBase):
         self,
         request: BaseResourceHandlerRequest,
         type_name: str,
-        db_resource: DynamoDBServiceResource
+        db_resource: DynamoDBServiceResource,
     ):
 
         super().__init__(
