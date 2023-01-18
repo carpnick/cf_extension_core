@@ -42,8 +42,8 @@ class ResourceRead(_ResourceBase):
 
     def read_model(
         self,
-        model_type: Type[_ResourceBase._T],
-    ) -> _ResourceBase._T:
+        model_type: Type[_ResourceBase.T],
+    ) -> _ResourceBase.T:
 
         if self._primary_identifier is None:
             raise Exception("Primary Identifier cannot be Null")
@@ -52,7 +52,7 @@ class ResourceRead(_ResourceBase):
 
     def update_model(
         self,
-        updated_model: _ResourceBase._T,
+        updated_model: _ResourceBase.T,
     ) -> None:
 
         if self._primary_identifier is None:

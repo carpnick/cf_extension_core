@@ -58,7 +58,7 @@ class ResourceUpdate(_ResourceBase):
 
     def update_model(
         self,
-        updated_model: _ResourceBase._T,
+        updated_model: _ResourceBase.T,
     ) -> None:
 
         if self._primary_identifier is None:

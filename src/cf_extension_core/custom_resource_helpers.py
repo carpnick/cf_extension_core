@@ -14,7 +14,7 @@ class CustomResourceHelpers:
     def generate_primary_identifier_for_resource_tracking(
         stack_id: str,
         logical_resource_id: str,
-        resource_identifier,
+        resource_identifier: str,
     ) -> str:
         identifier = (
             stack_id
@@ -106,7 +106,7 @@ class CustomResourceHelpers:
         return identifier
 
     @staticmethod
-    def get_naked_resource_identifier_from_string(primary_identifier: str):
+    def get_naked_resource_identifier_from_string(primary_identifier: str) -> str:
         array = primary_identifier.split(
             CustomResourceHelpers.STANDARD_SEPARATOR + CustomResourceHelpers.STANDARD_SEPARATOR
         )
@@ -220,6 +220,7 @@ class CustomResourceHelpers:
         if "resource_entry_end_time" not in callback_context:
             raise exceptions.InternalFailure("resource_entry_end_time not set in callback state")
         else:
-            if callback_context["resource_entry_end_time"] > datetime.datetime.utcnow():
+            # If calculated end time is less than now - we should be timing out with an exception.
+            if callback_context["resource_entry_end_time"] < datetime.datetime.utcnow():
                 # If resource end time is greater than now we need to return failure due to timeout
                 raise exceptions.InternalFailure(" Timed out trying to create/update/delete resource.")

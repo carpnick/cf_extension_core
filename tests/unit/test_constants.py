@@ -1,5 +1,7 @@
+import cf_extension_core as lib  # noqa: F401
+import pytest  # noqa: F401
+from cf_extension_core.constants import DynamoDBValues
 
-import cf_extension_core as dynamo
 
-def test_quick():
-    assert dynamo.interface.DynamoDBValues.TABLE_NAME == dynamo.interface.DynamoDBValues.TABLE_NAME
+def test_quick() -> None:
+    assert DynamoDBValues.TABLE_NAME == DynamoDBValues.TABLE_NAME

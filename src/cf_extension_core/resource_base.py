@@ -2,7 +2,6 @@ import logging
 import json
 from typing import Type, Optional, Any, TYPE_CHECKING, TypeVar, cast
 
-
 from cloudformation_cli_python_lib import exceptions
 
 from cf_extension_core.dynamo_table_creator import DynamoTableCreator
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class ResourceBase:
 
-    _T = TypeVar("_T", bound=Optional[_BaseModel])
+    T = TypeVar("T", bound=Optional[_BaseModel])
 
     def __init__(
         self,
@@ -51,10 +50,10 @@ class ResourceBase:
     # Business logic for saving Model to Dynamo for RO use cases primarily#######
     class _ResourceData:
         _HELPER_KEY = "SleJXVw-6uvCUbd3whNDafJZ-Fc2UU0iQ1NiRCDY2dY="
-        _T = TypeVar("_T", bound=Optional[_BaseModel])
+        T = TypeVar("T", bound=Optional[_BaseModel])
 
         @staticmethod
-        def _model_to_string(model: _T) -> str:
+        def _model_to_string(model: T) -> str:
 
             # MODEL is not serializable
             #
@@ -65,8 +64,8 @@ class ResourceBase:
         @staticmethod
         def _model_from_string(
             modelstr: str,
-            class_type: Type[_T],
-        ) -> Any:
+            class_type: Type[T],
+        ) -> T:
             try:
                 mystr = Fernet(ResourceBase._ResourceData._HELPER_KEY.encode()).decrypt(modelstr.encode()).decode()
             except InvalidToken as exc:
@@ -87,7 +86,7 @@ class ResourceBase:
         if self._primary_identifier is None:
             raise Exception("primary_identifier is still Null")
 
-        return cast(str, self._primary_identifier)
+        return self._primary_identifier
 
     def _not_found_check(self) -> None:
         if not self._db_item_exists():
@@ -101,7 +100,7 @@ class ResourceBase:
     # Insert Requests#######
     def _db_item_insert_without_overwrite(
         self,
-        model: _T,
+        model: T,
     ) -> None:
 
         the_table = self._dynamo_db_table()
@@ -132,7 +131,7 @@ class ResourceBase:
     # POST Requests#######
     def _db_item_update_model(
         self,
-        model: _T,
+        model: T,
     ) -> None:
 
         logger.info("_db_item_update_model called")
@@ -183,8 +182,8 @@ class ResourceBase:
 
     def _db_item_get_model(
         self,
-        model_type: Type[_T],
-    ) -> Any:
+        model_type: Type[T],
+    ) -> T:
 
         logger.info("_db_item_get_model called")
 
@@ -200,7 +199,7 @@ class ResourceBase:
 
         return ResourceBase._ResourceData._model_from_string(random_str, class_type=model_type)
 
-    def _db_item_list_primary_identifiers_for_cr_type(self):
+    def _db_item_list_primary_identifiers_for_cr_type(self) -> list[str]:
         if self._type_name is None:
             raise Exception("Cannot support getting primary identifiers if I dont know type to get")
 
@@ -216,11 +215,12 @@ class ResourceBase:
             ConsistentRead=True,
         )
         for item in scan_output["Items"]:
-            return_value.append(item[constants.RowColumnNames.PRIMARY_IDENTIFIER_NAME])
+            return_value.append(cast(str, item[constants.RowColumnNames.PRIMARY_IDENTIFIER_NAME]))
 
         # Paginate indefinitely
         if "LastEvaluatedKey" in scan_output:
-            last_evaluated_key_data = scan_output["LastEvaluatedKey"]
+            # Turned off type checking since we set it to None later
+            last_evaluated_key_data: Any = scan_output["LastEvaluatedKey"]
 
             while last_evaluated_key_data is not None:
                 scan_output2 = self._db_resource.meta.client.scan(
@@ -234,7 +234,7 @@ class ResourceBase:
                     ExclusiveStartKey=last_evaluated_key_data,
                 )
                 for item in scan_output2["Items"]:
-                    return_value.append(item[constants.RowColumnNames.PRIMARY_IDENTIFIER_NAME])
+                    return_value.append(cast(str, item[constants.RowColumnNames.PRIMARY_IDENTIFIER_NAME]))
 
                 if "LastEvaluatedKey" in scan_output2:
                     last_evaluated_key_data = scan_output2["LastEvaluatedKey"]
