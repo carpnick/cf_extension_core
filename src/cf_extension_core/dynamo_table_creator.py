@@ -40,7 +40,7 @@ class DynamoTableCreator:
     def create_standard_table(self) -> None:
 
         if self.table_exists():
-            logging.info("Table exist")
+            logger.info("Table exist")
             return
 
         self._create_table(

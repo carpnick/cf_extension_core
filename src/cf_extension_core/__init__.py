@@ -11,6 +11,8 @@ from cf_extension_core.interface import (  # noqa: F401
     generate_dynamo_resource,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def initialize_handler(
     callback_context: MutableMapping[str, Any],
@@ -35,7 +37,7 @@ def _default_package_logging_config() -> None:
     logging.getLogger(__name__).setLevel(logging.DEBUG)
     logging.getLogger(__name__).setLevel(logging.DEBUG)
 
-    logging.info("Test Log")
+    logger.info("cf_extension_core logging enabled")
 
 
 # Package Logger
