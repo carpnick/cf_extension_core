@@ -2,6 +2,7 @@ import logging
 import types
 from typing import Type, Literal, TYPE_CHECKING, Optional
 
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest, BaseModel
 
 from cf_extension_core.resource_base import ResourceBase as _ResourceBase
@@ -82,20 +83,32 @@ class ResourceRead(_ResourceBase):
 
         logger.info("DynamoRead Exit...")
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
+        try:
+            if exception_type is None:
+                logger.info("Has Failure = False")
 
-            if self._was_model_updated:
-                logger.info("Row being Updated")
-                self._db_item_update_model(model=self._updated_model)
+                if self._was_model_updated:
+                    logger.info("Row being Updated")
+                    self._db_item_update_model(model=self._updated_model)
+                else:
+                    logger.info("Row not updated")
+
+                return False
+
             else:
-                logger.info("Row not updated")
-        else:
 
-            # We failed in update logic
-            logger.info("Has Failure = True, row No Op")
+                # We failed in read logic
+                logger.info("Has Failure = True, row No Op")
 
-        logger.info("DynamoRead Exit Completed")
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
+
+                # We failed hard so we should raise a different exception that the
+                raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
+                    "Broken in Custom resource - READ, contact resource owner") from exception_value
+
+        finally:
+
+            logger.info("DynamoRead Exit Completed")
 
         # let exception flourish always
-        return False

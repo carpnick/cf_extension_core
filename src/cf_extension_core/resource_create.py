@@ -3,6 +3,7 @@ import types
 from typing import Type, Literal, TYPE_CHECKING, cast, Optional
 
 import cloudformation_cli_python_lib.exceptions
+from cloudformation_cli_python_lib import exceptions
 from cloudformation_cli_python_lib.interface import BaseModel, BaseResourceHandlerRequest
 
 from cf_extension_core.resource_base import ResourceBase as _ResourceBase
@@ -104,39 +105,46 @@ class ResourceCreate(_ResourceBase):
 
         logger.info("DynamoCreate Exit...")
 
-        # End with
-        # IF success DB code should create the row if set_resource_created was called
-        # If success but set_resource_created was not called - Do nothing in Dynamo -
-        #   resource already existed - statemachine execution
-        # If error/exception be - no row created and let it propagate upwards
+        try:
 
-        # Determine if error happened (bad CR to determine if we should delete the item at the end or not.
-        # Resource was created...
+            # End with
+            # IF success DB code should create the row if set_resource_created was called
+            # If success but set_resource_created was not called - Do nothing in Dynamo -
+            #   resource already existed - statemachine execution
+            # If error/exception be - no row created and let it propagate upwards
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
-            if not self._set_resource_created_called:
-                # Resource was already created - nothing to do here - no row needs to be created
-                pass
+            # Determine if error happened (bad CR to determine if we should delete the item at the end or not.
+            # Resource was created...
+
+            if exception_type is None:
+                logger.info("Has Failure = False")
+                if not self._set_resource_created_called:
+                    # Resource was already created - nothing to do here - no row needs to be created
+                    pass
+                else:
+                    # Check if row exists - if it does we need to fail out correctly
+                    if self._primary_identifier is not None:
+                        self._duplicate_primary_identifier()
+
+                    logger.info("Row being created")
+
+                    self._db_item_insert_without_overwrite(cast(BaseModel, self._current_model))
+                    return False
             else:
-                # Check if row exists - if it does we need to fail out correctly
-                if self._primary_identifier is not None:
-                    self._duplicate_primary_identifier()
 
-                logger.info("Row being created")
+                # We failed in creation logic
+                logger.info("Has Failure = True, row NOT created")
 
-                self._db_item_insert_without_overwrite(cast(BaseModel, self._current_model))
-        else:
+                # Failed during creation of resource for any number of reasons
+                # Assuming it failed with no resource actually created - only valid assumption we can make.
+                # Dont create the Row
 
-            # We failed in creation logic
-            logger.info("Has Failure = True, row NOT created")
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
 
-            # Failed during creation of resource for any number of reasons
-            # Assuming it failed with no resource actually created - only valid assumption we can make.
-            # Dont create the Row
-            pass
+                # We failed hard so we should raise a different exception that the
+                raise exceptions.HandlerInternalFailure("Broken in Custom resource - "
+                                                        "CREATE, contact resource owner") from exception_value
+        finally:
 
-        logger.info("DynamoCreate Exit Completed")
-
-        # let exception flourish always
-        return False
+            logger.info("DynamoCreate Exit Completed")

@@ -2,6 +2,7 @@ import logging
 import types
 from typing import Type, Literal, TYPE_CHECKING, Optional
 
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
 
 from cf_extension_core.resource_base import ResourceBase
@@ -62,19 +63,29 @@ class ResourceDelete(ResourceBase):
 
         logger.info("DynamoDelete Exit...")
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
+        try:
 
-            self._db_item_delete()
-        else:
-            # We failed in delete logic
-            logger.info("Has Failure = True, row will not be deleted")
+            if exception_type is None:
+                logger.info("Has Failure = False")
 
-            # Failed during delete of resource for any number of reasons
-            # Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
-            # Dont update the Row
+                self._db_item_delete()
 
-        logger.info("DynamoDelete Exit Completed")
+                return False
 
-        # let exception flourish always
-        return False
+            else:
+                # We failed in delete logic
+                logger.info("Has Failure = True, row will not be deleted")
+
+                # Failed during delete of resource for any number of reasons
+                # Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
+                # Dont update the Row
+
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
+
+                # We failed hard so we should raise a different exception that the
+                raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
+                    "Broken in Custom resource - CREATE, contact resource owner") from exception_value
+
+        finally:
+            logger.info("DynamoDelete Exit Completed")

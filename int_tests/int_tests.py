@@ -1,5 +1,6 @@
 import logging
 import boto3
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib import BaseResourceHandlerRequest
 from cloudformation_cli_python_lib.exceptions import *
 from gen_models import ResourceModel
@@ -506,9 +507,127 @@ def test_create_create_same_identifier_known_ahead_of_time():
                                     db_resource=dynamo.generate_dynamo_resource()) as DB:
             logging.info("Got here")
             assert True
-
+        assert True
     except Exception:
         assert False, "This needs to be allowed due to reinvoke use case"
+
+def test_create_with_random_exception():
+
+    separator("test_create_with_random_exception")
+    test_input_model = return_model()
+    handler_request = return_handler_request(model=test_input_model)
+
+
+    try:
+        with dynamo.create_resource(request=handler_request,
+                                    type_name=return_type_name(),
+                                    db_resource=dynamo.generate_dynamo_resource(),) as DB:
+            raise Exception("Random Exception")
+
+        assert False
+    except cloudformation_cli_python_lib.exceptions.HandlerInternalFailure as e:
+        logging.info(e.to_progress_event())
+        assert True
+def test_create_read_with_random_exception():
+
+    separator("test_create_read_with_random_exception")
+    test_input_model = return_model()
+    handler_request = return_handler_request(model=test_input_model)
+    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+        handler_request.stackId, handler_request.logicalResourceIdentifier)
+
+    with dynamo.create_resource(request=handler_request,
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource(), ) as DB:
+
+        model: ResourceModel = handler_request.desiredResourceState
+        model.GeneratedReadOnlyId = stable_identifier
+        DB.set_resource_created(primary_identifier=stable_identifier,current_model=model)
+
+    try:
+        with dynamo.read_resource(request=handler_request,
+                                  type_name=return_type_name(),
+                                  db_resource=dynamo.generate_dynamo_resource(),
+                                  primary_identifier=stable_identifier) as DB:
+            raise Exception("Random Exception")
+
+        assert False
+    except cloudformation_cli_python_lib.exceptions.HandlerInternalFailure as e:
+        assert True
+    except Exception as e:
+        assert False
+def test_create_update_with_random_exception():
+
+    separator("test_create_update_with_random_exception")
+    test_input_model = return_model()
+    handler_request = return_handler_request(model=test_input_model)
+    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+        handler_request.stackId, handler_request.logicalResourceIdentifier)
+
+    with dynamo.create_resource(request=handler_request,
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource(), ) as DB:
+
+        model: ResourceModel = handler_request.desiredResourceState
+        model.GeneratedReadOnlyId = stable_identifier
+        DB.set_resource_created(primary_identifier=stable_identifier,current_model=model)
+
+    try:
+        with dynamo.update_resource(request=handler_request,
+                                  type_name=return_type_name(),
+                                  db_resource=dynamo.generate_dynamo_resource(),
+                                  primary_identifier=stable_identifier) as DB:
+            raise Exception("Random Exception")
+
+        assert False
+    except cloudformation_cli_python_lib.exceptions.HandlerInternalFailure as e:
+        assert True
+    except Exception as e:
+        assert False
+def test_create_delete_with_random_exception():
+
+    separator("test_create_delete_with_random_exception")
+    test_input_model = return_model()
+    handler_request = return_handler_request(model=test_input_model)
+    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+        handler_request.stackId, handler_request.logicalResourceIdentifier)
+
+    with dynamo.create_resource(request=handler_request,
+                              type_name=return_type_name(),
+                              db_resource=dynamo.generate_dynamo_resource(), ) as DB:
+
+        model: ResourceModel = handler_request.desiredResourceState
+        model.GeneratedReadOnlyId = stable_identifier
+        DB.set_resource_created(primary_identifier=stable_identifier,current_model=model)
+
+    try:
+        with dynamo.delete_resource(request=handler_request,
+                                  type_name=return_type_name(),
+                                  db_resource=dynamo.generate_dynamo_resource(),
+                                  primary_identifier=stable_identifier) as DB:
+            raise Exception("Random Exception")
+
+        assert False
+    except cloudformation_cli_python_lib.exceptions.HandlerInternalFailure as e:
+        assert True
+    except Exception as e:
+        assert False
+def test_list_with_random_exception():
+
+    separator("test_list_with_random_exception")
+    test_input_model = return_model()
+    handler_request = return_handler_request(model=test_input_model)
+    try:
+        with dynamo.list_resource(request=handler_request,
+                                  type_name=return_type_name(),
+                                  db_resource=dynamo.generate_dynamo_resource()) as DB:
+            raise Exception("Random Exception")
+
+        assert False
+    except cloudformation_cli_python_lib.exceptions.HandlerInternalFailure as e:
+        assert True
+    except Exception as e:
+        assert False
 
 if __name__ == "__main__":
 
@@ -540,7 +659,12 @@ if __name__ == "__main__":
         lambda: test_create_delete_read(),
         lambda: test_create_delete_list(),
         lambda: test_create_delete_delete(),
-        lambda: test_create_create_same_identifier_known_ahead_of_time()
+        lambda: test_create_create_same_identifier_known_ahead_of_time(),
+        lambda: test_create_with_random_exception(),
+        lambda: test_create_read_with_random_exception(),
+        lambda: test_create_update_with_random_exception(),
+        lambda: test_create_delete_with_random_exception(),
+        lambda: test_list_with_random_exception()
     ]
 
     for test in tests:

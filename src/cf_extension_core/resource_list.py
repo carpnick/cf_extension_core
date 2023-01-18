@@ -3,6 +3,7 @@ import types
 
 from typing import Type, Literal, TYPE_CHECKING, Optional, List
 
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
 
 from cf_extension_core.resource_base import ResourceBase
@@ -63,14 +64,21 @@ class ResourceList(ResourceBase):
 
         logger.info("DynamoList Exit...")
 
-        if exception_type is None:
-            logger.info("Has Failure = False, row No Op")
-        else:
+        try:
 
-            # We failed in update logic
-            logger.info("Has Failure = True, row No Op")
+            if exception_type is None:
+                logger.info("Has Failure = False, row No Op")
+                return False
+            else:
 
-        logger.info("DynamoList Exit Completed")
+                # We failed
+                logger.info("Has Failure = True, row No Op")
 
-        # let exception flourish always
-        return False
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
+
+                # We failed hard so we should raise a different exception that the
+                raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
+                    "Broken in Custom resource - LIST, contact resource owner") from exception_value
+        finally:
+            logger.info("DynamoList Exit Completed")
