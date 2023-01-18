@@ -35,6 +35,8 @@ def _default_package_logging_config() -> None:
     logging.getLogger(__name__).setLevel(logging.DEBUG)
     logging.getLogger(__name__).setLevel(logging.DEBUG)
 
+    logging.info("Test Log")
+
 
 # Package Logger
 # Set up logging to ``/dev/null`` like a library is supposed to.
