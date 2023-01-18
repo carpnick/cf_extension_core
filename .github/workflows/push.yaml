@@ -43,11 +43,11 @@ jobs:
         with:
           path: .venv
           #Change -0- to something else to bust the cache manually if needed
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-0-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-1-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction -vvv
 
       #CI portion of the Job
       - name: Generate typing stubs
