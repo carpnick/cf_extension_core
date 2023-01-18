@@ -85,7 +85,8 @@ class ResourceDelete(ResourceBase):
 
                 # We failed hard so we should raise a different exception that the
                 raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
-                    "Broken in Custom resource - CREATE, contact resource owner") from exception_value
+                    "Broken in Custom resource - CREATE, contact resource owner"
+                ) from exception_value
 
         finally:
             logger.info("DynamoDelete Exit Completed")

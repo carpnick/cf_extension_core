@@ -143,8 +143,9 @@ class ResourceCreate(_ResourceBase):
                 logger.error(exception_value, exc_info=True)
 
                 # We failed hard so we should raise a different exception that the
-                raise exceptions.HandlerInternalFailure("Broken in Custom resource - "
-                                                        "CREATE, contact resource owner") from exception_value
+                raise exceptions.HandlerInternalFailure(
+                    "Broken in Custom resource - " "CREATE, contact resource owner"
+                ) from exception_value
         finally:
 
             logger.info("DynamoCreate Exit Completed")
