@@ -194,7 +194,7 @@ class CustomResourceHelpers:
     ) -> None:
         # No if statement here
         # If we get re-invoked we need to reset handler entry time to the new invocation
-        callback_context["handler_entry_time"] = datetime.datetime.utcnow()
+        callback_context["handler_entry_time"] = datetime.datetime.utcnow().isoformat()
 
     @staticmethod
     def _callback_add_resource_end_time(
@@ -203,9 +203,9 @@ class CustomResourceHelpers:
     ) -> None:
         # If statement makes sure this gets set once and only once for every resource create/update/delete call.
         if "resource_entry_end_time" not in callback_context:
-            callback_context["resource_entry_end_time"] = datetime.datetime.utcnow() + datetime.timedelta(
-                minutes=total_allowed_time_in_minutes
-            )
+            callback_context["resource_entry_end_time"] = (
+                datetime.datetime.utcnow() + datetime.timedelta(minutes=total_allowed_time_in_minutes)
+            ).isoformat()
 
     @staticmethod
     def should_return_in_progress_due_to_handler_timeout(
@@ -218,14 +218,16 @@ class CustomResourceHelpers:
             # If handler entry time + Max return time (60)
             # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
             # Return before CF kills us.
-
+            orig_time = datetime.datetime.fromisoformat(callback_context["handler_entry_time"])
             compare_time = (
-                callback_context["handler_entry_time"]
+                orig_time
                 + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
                 - datetime.timedelta(seconds=10)
             )
 
-            if datetime.datetime.utcnow() > compare_time:
+            cur_time = datetime.datetime.utcnow()
+
+            if cur_time > compare_time:
                 return True
             else:
                 return False
@@ -238,6 +240,7 @@ class CustomResourceHelpers:
             raise exceptions.InternalFailure("resource_entry_end_time not set in callback state")
         else:
             # If calculated end time is less than now - we should be timing out with an exception.
-            if callback_context["resource_entry_end_time"] < datetime.datetime.utcnow():
+            orig_time = datetime.datetime.fromisoformat(callback_context["resource_entry_end_time"])
+            if orig_time < datetime.datetime.utcnow():
                 # If resource end time is greater than now we need to return failure due to timeout
                 raise exceptions.InternalFailure(" Timed out trying to create/update/delete resource.")

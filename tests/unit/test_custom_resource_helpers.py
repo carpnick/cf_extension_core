@@ -67,12 +67,72 @@ def test_timeout_handler_with_timeout(mocker: MockerFixture) -> None:
         seconds=lib.CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS + 5
     )
 
+    iso = datetime.datetime.fromisoformat(callback["handler_entry_time"])
+
     with mocker.mock_module.patch("datetime.datetime") as m:
         m.utcnow.return_value = target_val
+        m.fromisoformat.return_value = iso
         assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback) is True
 
     # Adding just 5 seconds is not late enough - so it should continue running - return False
     target_val2 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
     with mocker.mock_module.patch("datetime.datetime") as m:
         m.utcnow.return_value = target_val2
+        m.fromisoformat.return_value = iso
         assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback) is False
+
+
+def test_handler_end_time_timeout(mocker: MockerFixture) -> None:
+    callback: Dict[str, Any] = {}
+    lib.CustomResourceHelpers._callback_add_resource_end_time(callback, 1)
+
+    target_val1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=2)
+    target_val2 = datetime.datetime.utcnow() + datetime.timedelta(minutes=2)
+
+    iso = datetime.datetime.fromisoformat(callback["resource_entry_end_time"])
+
+    with mocker.mock_module.patch("datetime.datetime") as m:
+        m.utcnow.return_value = target_val1
+        m.fromisoformat.return_value = iso
+        lib.CustomResourceHelpers._return_failure_due_to_timeout(callback)
+
+    with mocker.mock_module.patch("datetime.datetime") as m:
+        m.utcnow.return_value = target_val2
+        m.fromisoformat.return_value = iso
+        try:
+            lib.CustomResourceHelpers._return_failure_due_to_timeout(callback)
+            assert False
+        except Exception:
+            assert True
+
+
+def test_end_time_added_once(mocker: MockerFixture) -> None:
+    callback: Dict[str, Any] = {}
+
+    with mocker.mock_module.patch("datetime.datetime") as m:
+        m.utcnow = mocker.MagicMock()
+        lib.CustomResourceHelpers._callback_add_resource_end_time(callback, 1)
+        lib.CustomResourceHelpers._callback_add_resource_end_time(callback, 1)
+        assert m.utcnow.call_count == 1
+
+
+def test_end_time_exists_on_failure_check(mocker: MockerFixture) -> None:
+    callback: Dict[str, Any] = {}
+
+    try:
+        lib.CustomResourceHelpers._return_failure_due_to_timeout(callback)
+        assert False
+    except Exception:
+        assert True
+
+
+def test_handler_entry_time_added_for_should_return_in_progress_due_to_handler_timeout_method(
+    mocker: MockerFixture,
+) -> None:
+    callback: Dict[str, Any] = {}
+
+    try:
+        lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback)
+        assert False
+    except Exception:
+        assert True
