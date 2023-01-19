@@ -8,6 +8,7 @@ echo "Generate files"
 find src/ -type f -name '*.pyi' -exec rm {} +
 stubgen src/ -o src/  --include-private  #Only add include private for local dev work?  Not in Github actions?
 
+
 echo "Running mypy"
 mypy src/ --strict
 mypy tests/ --strict

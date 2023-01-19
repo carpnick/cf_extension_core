@@ -1,7 +1,7 @@
 import logging
 import types
 
-from typing import Type, Literal, TYPE_CHECKING, Optional, List
+from typing import Type, Literal, TYPE_CHECKING, Optional
 
 import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
