@@ -17,15 +17,19 @@ def test_init_handler_use_case() -> None:
 def test_gen_identifier_with_value_for_stack_id_and_logical_id() -> None:
 
     # use case - Contract tests send in None for stack id.  Logical resource id we are covering for good measure.
-    myval1 = lib.CustomResourceHelpers.generate_id_read_only_resource(stack_id="as",
-                                                                      logical_resource_id="qwe")
+    myval1 = lib.CustomResourceHelpers.generate_id_read_only_resource(
+        stack_id="as",
+        logical_resource_id="qwe",
+    )
     assert "as" in myval1
     assert "qwe" in myval1
     assert lib.CustomResourceHelpers.STANDARD_SEPARATOR in myval1
 
-    myval = lib.CustomResourceHelpers.generate_id_resource(stack_id="as",
-                                                           logical_resource_id="qwe",
-                                                           resource_identifier="123")
+    myval = lib.CustomResourceHelpers.generate_id_resource(
+        stack_id="as",
+        logical_resource_id="qwe",
+        resource_identifier="123",
+    )
     assert "as" in myval
     assert "qwe" in myval
     assert "123" in myval
@@ -35,11 +39,16 @@ def test_gen_identifier_with_value_for_stack_id_and_logical_id() -> None:
 def test_gen_identifier_with_null_stack_id_and_logical_id() -> None:
 
     # use case - Contract tests send in None for stack id.  Logical resource id we are covering for good measure.
-    lib.CustomResourceHelpers.generate_id_read_only_resource(stack_id=None,
-                                                             logical_resource_id=None)
-    lib.CustomResourceHelpers.generate_id_resource(stack_id=None,
-                                                   logical_resource_id=None,
-                                                   resource_identifier="123")
+    # Make it work for both read only resources and real resources
+    lib.CustomResourceHelpers.generate_id_read_only_resource(
+        stack_id=None,
+        logical_resource_id=None,
+    )
+    lib.CustomResourceHelpers.generate_id_resource(
+        stack_id=None,
+        logical_resource_id=None,
+        resource_identifier="123",
+    )
 
 
 def test_non_timeout_handler() -> None:
@@ -55,7 +64,8 @@ def test_timeout_handler_with_timeout(mocker: MockerFixture) -> None:
 
     # Adding the full 60 + 5 is defintely after time and it should return  - aka True
     target_val = datetime.datetime.utcnow() + datetime.timedelta(
-                     seconds=lib.CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS + 5)
+        seconds=lib.CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS + 5
+    )
 
     with mocker.mock_module.patch("datetime.datetime") as m:
         m.utcnow.return_value = target_val

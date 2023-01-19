@@ -62,16 +62,13 @@ jobs:
           source .venv/bin/activate
           
           echo "Running mypy"
-          mypy src/ --strict
-          mypy tests/ --strict
+          mypy src/ tests/  --strict
           
           echo "Running flake8"
-          flake8 --max-line-length 120 src/
-          flake8 --max-line-length 120 tests/
+          flake8 --max-line-length 120 src/  tests/
           
           echo "Running black"
-          black src/ -l 120 --check
-          black tests/ -l 120 --check
+          black src/ tests/ -l 120 --check
 
       - name: Unit Tests
         run: |

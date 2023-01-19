@@ -17,12 +17,11 @@ pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.x
 
 #Moved this later for dev since I care less about formatting and more about functionality
 echo "\nRunning flake8"
-flake8 --max-line-length 120 src/
-flake8 --max-line-length 120 tests/
+flake8 --max-line-length 120 src/ tests/
 
 echo "\nRunning black"
-black src/ -l 120 --check
-black tests/ -l 120 --check
+black src/ tests/ -l 120 --check
+
 
 
 echo "\n\nBuild completed successfully"

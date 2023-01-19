@@ -102,6 +102,7 @@ class CustomResourceHelpers:
             logical_resource_id = "-"
 
         import uuid
+
         uuidstr = str(uuid.uuid4())  # Not guaranteed unique technically - but the best we can do
         # We really dont care if a read only resource is executed 100 + times in a region -
         # its just reading data so it doesnt matter the complexity of this implementation.
@@ -218,9 +219,11 @@ class CustomResourceHelpers:
             # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
             # Return before CF kills us.
 
-            compare_time = callback_context["handler_entry_time"] \
-                + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS) \
+            compare_time = (
+                callback_context["handler_entry_time"]
+                + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
                 - datetime.timedelta(seconds=10)
+            )
 
             if datetime.datetime.utcnow() > compare_time:
                 return True
