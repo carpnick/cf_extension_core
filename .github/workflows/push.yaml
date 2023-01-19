@@ -62,7 +62,8 @@ jobs:
           source .venv/bin/activate
           
           echo "Running mypy"
-          mypy src/ tests/  --strict
+          mypy src/  --strict
+          mypy tests/  --strict
           
           echo "Running flake8"
           flake8 --max-line-length 120 src/  tests/
