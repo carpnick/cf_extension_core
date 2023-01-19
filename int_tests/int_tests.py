@@ -36,21 +36,6 @@ def return_model(group_name="Test", identity_store_id="identity"):
     mymodel = ResourceModel._deserialize(sample_model_to_save)
     return mymodel
 
-def return_read_only_resource_identifier(handler_request):
-    return dynamo.CustomResourceHelpers.\
-        generate_primary_identifier_for_resource_tracking_read_only_resource(
-            handler_request.stackId,
-            handler_request.logicalResourceIdentifier
-    )
-
-def return_regular_resource_identifier(handler_request, real_identifier):
-    return dynamo.CustomResourceHelpers.\
-        generate_primary_identifier_for_resource_tracking(
-            handler_request.stackId,
-            handler_request.logicalResourceIdentifier,
-            resource_identifier=real_identifier
-    )
-
 def return_type_name():
     return "ExampleTypeName"
 
@@ -59,7 +44,6 @@ def separator(test_name):
     logging.info("---------------------------------------------------------")
     logging.info("   "+ test_name)
     logging.info("---------------------------------------------------------")
-
 
 
 #Contract tests from https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/contract-tests.html
@@ -80,7 +64,8 @@ def test_create_read_delete_ro():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId,
+                                                                                                handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -123,7 +108,7 @@ def test_create_create_same_identifier():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -154,7 +139,7 @@ def test_create_list():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -181,7 +166,7 @@ def test_create_update_list():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -216,7 +201,7 @@ def test_create_update_read():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -243,7 +228,7 @@ def test_update_without_create():
 
     model: ResourceModel = handler_request.desiredResourceState
     model.GroupId = "123"
-    model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+    model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
         handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     try:
@@ -265,7 +250,7 @@ def test_delete_create():
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
 
-    stablie_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId,
+    stablie_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId,
                                                                                                                     handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
@@ -304,7 +289,7 @@ def test_delete_update():
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
 
-    stablie_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId,
+    stablie_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId,
                                                                                                                     handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
@@ -354,7 +339,7 @@ def test_create_delete_read():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -398,7 +383,7 @@ def test_create_delete_list():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -430,7 +415,7 @@ def test_create_delete_delete():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -468,7 +453,7 @@ def test_create_create_ro_resource():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
 
@@ -478,7 +463,7 @@ def test_create_create_ro_resource():
 
         # Fake create code
         model.GroupId = "123"
-        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+        model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
             handler_request.stackId, handler_request.logicalResourceIdentifier)
 
         DB.set_resource_created(primary_identifier=model.GeneratedReadOnlyId, current_model=model)
@@ -488,7 +473,7 @@ def test_create_create_same_identifier_known_ahead_of_time():
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
 
-    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
+    stable_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
                                 type_name=return_type_name(),
@@ -533,7 +518,7 @@ def test_create_read_with_random_exception():
     separator("test_create_read_with_random_exception")
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
-    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+    stable_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
         handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
@@ -561,7 +546,7 @@ def test_create_update_with_random_exception():
     separator("test_create_update_with_random_exception")
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
-    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+    stable_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
         handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
@@ -589,7 +574,7 @@ def test_create_delete_with_random_exception():
     separator("test_create_delete_with_random_exception")
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
-    stable_identifier = dynamo.CustomResourceHelpers.generate_primary_identifier_for_resource_tracking_read_only_resource(
+    stable_identifier = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
         handler_request.stackId, handler_request.logicalResourceIdentifier)
 
     with dynamo.create_resource(request=handler_request,
@@ -670,6 +655,3 @@ if __name__ == "__main__":
     for test in tests:
         DynamoTableCreator(dynamo.interface.generate_dynamo_resource()).delete_table()
         test()
-
-
-

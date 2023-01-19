@@ -1,8 +1,8 @@
-import datetime
+import datetime as datetime
 
 from cloudformation_cli_python_lib.identifier_utils import generate_resource_identifier
 import cloudformation_cli_python_lib.exceptions as exceptions
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
 
 
 class CustomResourceHelpers:
@@ -11,11 +11,18 @@ class CustomResourceHelpers:
     STANDARD_SEPARATOR = "::"
 
     @staticmethod
-    def generate_primary_identifier_for_resource_tracking(
-        stack_id: str,
-        logical_resource_id: str,
+    def generate_id_resource(
+        stack_id: Optional[str],
+        logical_resource_id: Optional[str],
         resource_identifier: str,
     ) -> str:
+
+        if stack_id is None:
+            stack_id = "-"
+
+        if logical_resource_id is None:
+            logical_resource_id = "-"
+
         identifier = (
             stack_id
             + CustomResourceHelpers.STANDARD_SEPARATOR
@@ -83,12 +90,18 @@ class CustomResourceHelpers:
         return identifier
 
     @staticmethod
-    def generate_primary_identifier_for_resource_tracking_read_only_resource(
-        stack_id: str,
-        logical_resource_id: str,
+    def generate_id_read_only_resource(
+        stack_id: Optional[str],
+        logical_resource_id: Optional[str],
     ) -> str:
-        import uuid
 
+        if stack_id is None:
+            stack_id = "-"
+
+        if logical_resource_id is None:
+            logical_resource_id = "-"
+
+        import uuid
         uuidstr = str(uuid.uuid4())  # Not guaranteed unique technically - but the best we can do
         # We really dont care if a read only resource is executed 100 + times in a region -
         # its just reading data so it doesnt matter the complexity of this implementation.
@@ -197,18 +210,19 @@ class CustomResourceHelpers:
     def should_return_in_progress_due_to_handler_timeout(
         callback_context: MutableMapping[str, Any],
     ) -> bool:
-        if "entry_time" not in callback_context:
-            raise exceptions.InternalFailure("entry_time not set in callback state")
+        if "handler_entry_time" not in callback_context:
+            raise exceptions.InternalFailure("handler_entry_time not set in callback state")
         else:
-            if (
-                callback_context["entry_time"]
-                + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
+
+            # If handler entry time + Max return time (60)
+            # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
+            # Return before CF kills us.
+
+            compare_time = callback_context["handler_entry_time"] \
+                + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS) \
                 - datetime.timedelta(seconds=10)
-                > datetime.datetime.utcnow()
-            ):
-                # If handler entry time + Max return time (60)
-                # - 10 seconds(arbitrary for wiggle room for dynamodb code) > Current time -->
-                # Return before CF kills us.
+
+            if datetime.datetime.utcnow() > compare_time:
                 return True
             else:
                 return False
