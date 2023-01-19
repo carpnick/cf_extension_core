@@ -55,7 +55,7 @@ jobs:
           source .venv/bin/activate
           echo "Generate Stubs"
           find src/ -type f -name '*.pyi' -exec rm {} +
-          stubgen src/ -o src/
+          stubgen --include-private src/ -o src/
 
       - name: Static Analysis and Code Formatting
         run: |
@@ -63,7 +63,7 @@ jobs:
           
           echo "Running mypy"
           mypy src/  --strict
-          mypy tests/  --strict
+          mypy tests/ --strict
           
           echo "Running flake8"
           flake8 --max-line-length 120 src/  tests/
