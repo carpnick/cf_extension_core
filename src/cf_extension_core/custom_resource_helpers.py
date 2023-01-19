@@ -9,6 +9,7 @@ class CustomResourceHelpers:
     ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS = 60
     READ_LIST_HANDLER_TIMEOUT = 30
     STANDARD_SEPARATOR = "::"
+    HANDLER_ENTRY_TIME = None
 
     @staticmethod
     def generate_id_resource(
@@ -189,12 +190,10 @@ class CustomResourceHelpers:
         return primary_name
 
     @staticmethod
-    def _callback_add_handler_entry_time(
-        callback_context: MutableMapping[str, Any],
-    ) -> None:
-        # No if statement here
-        # If we get re-invoked we need to reset handler entry time to the new invocation
-        callback_context["handler_entry_time"] = datetime.datetime.utcnow().isoformat()
+    def _callback_add_handler_entry_time() -> None:
+        # local variable only
+        if CustomResourceHelpers.HANDLER_ENTRY_TIME is None:
+            CustomResourceHelpers.HANDLER_ENTRY_TIME = datetime.datetime.utcnow()
 
     @staticmethod
     def _callback_add_resource_end_time(
@@ -208,19 +207,16 @@ class CustomResourceHelpers:
             ).isoformat()
 
     @staticmethod
-    def should_return_in_progress_due_to_handler_timeout(
-        callback_context: MutableMapping[str, Any],
-    ) -> bool:
-        if "handler_entry_time" not in callback_context:
-            raise exceptions.InternalFailure("handler_entry_time not set in callback state")
+    def should_return_in_progress_due_to_handler_timeout() -> bool:
+        if CustomResourceHelpers.HANDLER_ENTRY_TIME is None:
+            raise exceptions.InternalFailure("HANDLER_ENTRY_TIME not set properly")
         else:
 
             # If handler entry time + Max return time (60)
             # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
             # Return before CF kills us.
-            orig_time = datetime.datetime.fromisoformat(callback_context["handler_entry_time"])
             compare_time = (
-                orig_time
+                CustomResourceHelpers.HANDLER_ENTRY_TIME
                 + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
                 - datetime.timedelta(seconds=10)
             )
