@@ -41,7 +41,7 @@ class ResourceList(ResourceBase):
             type_name=type_name,
         )
 
-    def list_identifiers(self) -> List[str]:
+    def list_identifiers(self) -> list[str]:
 
         return self._db_item_list_primary_identifiers_for_cr_type()
 
