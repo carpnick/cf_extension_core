@@ -1,9 +1,7 @@
 import logging
 
-from cf_extension_core.interface import (  # noqa: F401
-    CustomResourceHelpers,
-    generate_dynamodb_resource,
-)
+# Public stuff
+from cf_extension_core.interface import CustomResourceHelpers, generate_dynamodb_resource  # noqa: F401
 from cf_extension_core.base_handler import BaseHandler  # noqa: F401
 
 

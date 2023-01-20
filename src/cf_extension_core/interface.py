@@ -20,7 +20,6 @@ from cf_extension_core.dynamo_table_creator import DynamoTableCreator  # noqa: F
 from cf_extension_core.custom_resource_helpers import CustomResourceHelpers  # noqa: F401
 from cf_extension_core.constants import DynamoDBValues  # noqa: F401
 
-
 LOG = logging.getLogger(__name__)
 
 

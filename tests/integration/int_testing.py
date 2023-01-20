@@ -1,8 +1,8 @@
 # Real use case
 
-#
+
 # import cf_extension_core as wrapper
-#
+# wrapper.
 #
 # def create_handler():
 #     wrapper.
