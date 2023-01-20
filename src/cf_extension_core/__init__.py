@@ -20,8 +20,6 @@ def initialize_handler(
     logger.debug("Start initialize_handler")
 
     # TODO: Consider overriding the Table name based on Type Name here
-    _default_package_logging_config()
-
     CustomResourceHelpers._callback_add_resource_end_time(
         callback_context=callback_context,
         total_allowed_time_in_minutes=total_allowed_time_in_minutes,
@@ -32,14 +30,13 @@ def initialize_handler(
     logger.debug("End initialize_handler")
 
 
-def _default_package_logging_config() -> None:
+def package_logging_config(logging_level: int) -> None:
     """
     Helps setup default logging config for custom resources
     :return:
     """
-    logging.getLogger(__name__).setLevel(logging.DEBUG)
-    logging.getLogger(__name__).setLevel(logging.DEBUG)
 
+    logging.getLogger(__name__).setLevel(logging_level)
     logger.info("cf_extension_core logging enabled")
 
 

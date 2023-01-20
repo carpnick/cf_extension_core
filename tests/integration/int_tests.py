@@ -782,7 +782,7 @@ if __name__ == "__main__":
     format_string = "%(asctime)s - %(process)d - %(levelname)s - %(filename)s - %(message)s"
     logging.basicConfig(format=format_string, level=logging.INFO)
 
-    dynamo._default_package_logging_config()
+    dynamo.package_logging_config(logging_level=logging.DEBUG)
 
     # Use a special TABLE? - HACK alert
     DynamoDBValues.TABLE_NAME = "aut-TEST"
