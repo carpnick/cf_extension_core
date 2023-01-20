@@ -105,7 +105,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local  # the path depends on the OS
-          key: poetry-${{ runner.os }}-0 #Increment to break cache
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-1-${{ hashFiles('**/poetry.lock') }}-poetry #Increment to break cache
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -127,7 +127,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}-deps
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-1-${{ hashFiles('**/poetry.lock') }}-deps
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
