@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class DynamoTableCreator:
     def __init__(self, db_resource: DynamoDBServiceResource):
-        self._client = db_resource
+        self._client: DynamoDBServiceResource = db_resource
 
     def delete_table(self) -> None:
         if self.table_exists():
@@ -30,23 +30,28 @@ class DynamoTableCreator:
     def table_exists(self) -> bool:
         try:
             self._client.meta.client.describe_table(TableName=DynamoDBValues.TABLE_NAME)
+            logger.debug("Table Exists")
             return True
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                logger.debug("Table Does not Exist")
                 return False
             else:
                 raise
 
     def create_standard_table(self) -> None:
 
+        logger.debug("In create_standard_table")
+
         if self.table_exists():
-            logger.info("Table exist")
+            logger.debug("Exit create_standard_table")
             return
 
         self._create_table(
             name=DynamoDBValues.TABLE_NAME,
             partition_key=DynamoDBValues.PARTITION_KEY,
         )
+        logger.debug("Exit create_standard_table")
 
     def _create_table(
         self,
@@ -70,7 +75,12 @@ class DynamoTableCreator:
 
             # Wait for table to be active
             self._wait_for_table_to_be_active()
-        except self._client.meta.client.exceptions.ResourceInUseException as ex:
+
+        except (
+            self._client.meta.client.exceptions.ResourceInUseException,
+            self._client.meta.client.exceptions.TableAlreadyExistsException,
+        ) as ex:
+
             logger.debug("Table already exists")
             self._wait_for_table_to_be_active()
 

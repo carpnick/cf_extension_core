@@ -1,11 +1,10 @@
 import logging
 import boto3
 import cloudformation_cli_python_lib.exceptions as exceptions
-from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy
-from gen_models import ResourceModel
+from gen_models import ResourceModel, ResourceHandlerRequest
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import typing
 
 if TYPE_CHECKING:
@@ -20,7 +19,7 @@ import cf_extension_core as dynamo
 
 def ret_dynamodb_resource() -> DynamoDBServiceResource:
     session = boto3._get_default_session()
-    return typing.cast(DynamoDBServiceResource, dynamo.generate_dynamodb_resource(SessionProxy(session)))
+    return dynamo.generate_dynamodb_resource(SessionProxy(session))
 
 
 def return_handler_request(
@@ -28,8 +27,8 @@ def return_handler_request(
     resource_identifier: str = "myresourceidentifier",
     stack_id: str = "arn:aws:cloudformation:us-west-2:123456789012:"
     "stack/teststack/51af3dc0-da77-11e4-872e-1234567db123",
-) -> BaseResourceHandlerRequest:
-    return BaseResourceHandlerRequest(
+) -> ResourceHandlerRequest:
+    return ResourceHandlerRequest(
         clientRequestToken="-",
         desiredResourceState=model,
         previousResourceState=None,
@@ -81,7 +80,8 @@ def test_create_read_delete_ro() -> None:
     with dynamo.create_resource(
         request=handler_request, type_name=return_type_name(), db_resource=ret_dynamodb_resource()
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -136,7 +136,8 @@ def test_create_create_same_identifier() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -172,7 +173,8 @@ def test_create_list() -> None:
     with dynamo.create_resource(
         request=handler_request, type_name=return_type_name(), db_resource=ret_dynamodb_resource()
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -201,7 +203,8 @@ def test_create_update_list() -> None:
     with dynamo.create_resource(
         request=handler_request, type_name=return_type_name(), db_resource=ret_dynamodb_resource()
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -239,7 +242,8 @@ def test_create_update_read() -> None:
     with dynamo.create_resource(
         request=handler_request, type_name=return_type_name(), db_resource=ret_dynamodb_resource()
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -276,7 +280,9 @@ def test_update_without_create() -> None:
     test_input_model = return_model()
     handler_request = return_handler_request(model=test_input_model)
 
-    model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+    model: Optional[ResourceModel] = handler_request.desiredResourceState
+    assert model is not None
+
     model.GroupId = "123"
     model.GeneratedReadOnlyId = dynamo.CustomResourceHelpers.generate_id_read_only_resource(
         handler_request.stackId, handler_request.logicalResourceIdentifier
@@ -314,7 +320,8 @@ def test_delete_create() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -335,7 +342,8 @@ def test_delete_create() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model2: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model2: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model2 is not None
 
         # Fake create code
         model2.GroupId = "123"
@@ -361,7 +369,8 @@ def test_delete_update() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -384,7 +393,8 @@ def test_delete_update() -> None:
             type_name=return_type_name(),
             db_resource=ret_dynamodb_resource(),
         ) as DB:
-            model2: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+            model2: Optional[ResourceModel] = handler_request.desiredResourceState
+            assert model2 is not None
 
             # Fake update code
             model2.GroupId = "1235"
@@ -408,7 +418,8 @@ def test_create_delete_read() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -464,7 +475,8 @@ def test_create_delete_list() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -506,7 +518,8 @@ def test_create_delete_delete() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -554,7 +567,8 @@ def test_create_create_ro_resource() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -594,7 +608,8 @@ def test_create_create_same_identifier_known_ahead_of_time() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
 
         # Fake create code
         model.GroupId = "123"
@@ -648,7 +663,8 @@ def test_create_read_with_random_exception() -> None:
         db_resource=ret_dynamodb_resource(),
     ) as DB:
 
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
         model.GeneratedReadOnlyId = stable_identifier
         DB.set_resource_created(primary_identifier=stable_identifier, current_model=model)
 
@@ -683,7 +699,8 @@ def test_create_update_with_random_exception() -> None:
         db_resource=ret_dynamodb_resource(),
     ) as DB:
 
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
         model.GeneratedReadOnlyId = stable_identifier
         DB.set_resource_created(primary_identifier=stable_identifier, current_model=model)
 
@@ -718,7 +735,8 @@ def test_create_delete_with_random_exception() -> None:
         db_resource=ret_dynamodb_resource(),
     ) as DB:
 
-        model: ResourceModel = typing.cast(ResourceModel, handler_request.desiredResourceState)
+        model: Optional[ResourceModel] = handler_request.desiredResourceState
+        assert model is not None
         model.GeneratedReadOnlyId = stable_identifier
         DB.set_resource_created(primary_identifier=stable_identifier, current_model=model)
 

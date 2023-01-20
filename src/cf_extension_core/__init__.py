@@ -1,6 +1,5 @@
 import logging
 from typing import MutableMapping, Any
-
 from cf_extension_core.interface import (  # noqa: F401
     create_resource,
     update_resource,
@@ -18,6 +17,8 @@ def initialize_handler(
     callback_context: MutableMapping[str, Any],
     total_allowed_time_in_minutes: int,
 ) -> None:
+    logger.debug("Start initialize_handler")
+
     # TODO: Consider overriding the Table name based on Type Name here
     _default_package_logging_config()
 
@@ -27,6 +28,8 @@ def initialize_handler(
     )
     CustomResourceHelpers._callback_add_handler_entry_time()
     CustomResourceHelpers._return_failure_due_to_timeout(callback_context)
+
+    logger.debug("End initialize_handler")
 
 
 def _default_package_logging_config() -> None:

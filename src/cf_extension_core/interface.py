@@ -20,7 +20,7 @@ else:
     _DynamoDBServiceResource = object
 
 
-def generate_dynamodb_resource(session_proxy: Optional[_SessionProxy]) -> object:
+def generate_dynamodb_resource(session_proxy: Optional[_SessionProxy]) -> _DynamoDBServiceResource:
     return session_proxy.resource(service_name="dynamodb")
 
 
