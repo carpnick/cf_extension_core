@@ -789,7 +789,7 @@ if __name__ == "__main__":
 
     boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
 
-    tests: list[typing.Callable[[], None]] = [
+    tests: typing.List[typing.Callable[[], None]] = [
         lambda: test_create_read_delete_ro(),
         lambda: test_create_create_same_identifier(),
         lambda: test_create_create_ro_resource(),
