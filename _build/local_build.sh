@@ -23,5 +23,7 @@ echo "\nRunning black: black src/ tests/ int_tests/ -l 120 --check"
 black src/ tests/ int_tests/ -l 120 --check
 
 
+echo "\n Running poetry build: poetry build"
+poetry build
 
 echo "\n\nBuild completed successfully"
