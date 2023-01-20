@@ -2,7 +2,7 @@ import logging
 import boto3
 import cloudformation_cli_python_lib.exceptions as exceptions
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy
-from .gen_models import ResourceModel, ResourceHandlerRequest
+from tests.integration.gen_models import ResourceModel, ResourceHandlerRequest
 
 from typing import TYPE_CHECKING, Optional
 import typing
@@ -14,7 +14,7 @@ else:
 
 
 # Internal
-import cf_extension_core as dynamo
+import cf_extension_core.interface as dynamo
 
 
 def ret_dynamodb_resource() -> DynamoDBServiceResource:

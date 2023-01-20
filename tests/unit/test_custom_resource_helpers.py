@@ -10,7 +10,7 @@ from typing import MutableMapping, Any, Dict
 def test_init_handler_use_case() -> None:
 
     callback_context: MutableMapping[str, Any] = {}
-    lib.initialize_handler(callback_context, 3)
+    lib.interface.initialize_handler(callback_context, 3)
     # Assertion is we dont cause an exception.
 
 
