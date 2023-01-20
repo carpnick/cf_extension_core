@@ -1,6 +1,5 @@
-
-#Real use case
-import cf_extension_core as wrapper
+# Real use case
+# import cf_extension_core as wrapper
 
 # def create_handler():
 #     wrapper.initialize_handler(None, 1)
@@ -9,5 +8,3 @@ import cf_extension_core as wrapper
 #         db.set_resource_created()
 #
 #
-
-

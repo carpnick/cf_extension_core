@@ -64,12 +64,13 @@ jobs:
           echo "Running mypy"
           mypy src/  --strict
           mypy tests/ --strict
+          mypy int_tests/ --strict
           
           echo "Running flake8"
-          flake8 --max-line-length 120 src/  tests/
+          flake8 --max-line-length 120 src/  tests/ int_tests/
           
           echo "Running black"
-          black src/ tests/ -l 120 --check
+          black src/ tests/ int_tests/ -l 120 --check
 
       - name: Unit Tests
         run: |

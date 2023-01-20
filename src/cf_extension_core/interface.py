@@ -1,6 +1,6 @@
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest as _BaseResourceHandlerRequest
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy as _SessionProxy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import cf_extension_core.resource_update as _resource_update
 import cf_extension_core.resource_create as _resource_create
@@ -20,7 +20,7 @@ else:
     _DynamoDBServiceResource = object
 
 
-def generate_dynamo_resource(session_proxy: _SessionProxy) -> _DynamoDBServiceResource:
+def generate_dynamodb_resource(session_proxy: Optional[_SessionProxy]) -> object:
     return session_proxy.resource(service_name="dynamodb")
 
 

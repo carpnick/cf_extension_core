@@ -8,7 +8,7 @@ from cf_extension_core.interface import (  # noqa: F401
     read_resource,
     list_resource,
     CustomResourceHelpers,
-    generate_dynamo_resource,
+    generate_dynamodb_resource,
 )
 
 logger = logging.getLogger(__name__)
