@@ -64,19 +64,18 @@ jobs:
           echo "Running mypy"
           mypy src/  --strict
           mypy tests/ --strict
-          mypy int_tests/ --strict
           
           echo "Running flake8"
-          flake8 --max-line-length 120 src/  tests/ int_tests/
+          flake8 --max-line-length 120 src/ tests/
           
           echo "Running black"
-          black src/ tests/ int_tests/ -l 120 --check
+          black src/ tests/ -l 120 --check
 
       - name: Unit Tests
         run: |
           echo "Running pytest"   
           source .venv/bin/activate
-          pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
+          pytest  --cov-branch --cov=src/ tests/unit --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
