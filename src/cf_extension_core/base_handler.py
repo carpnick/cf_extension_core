@@ -150,6 +150,8 @@ class BaseHandler(Generic[T, K]):
             message=message,
         )
 
-    def validate_identifier(self, identifier: typing.Optional[str]) -> None:
+    def validate_identifier(self, identifier: typing.Optional[str]) -> str:
         if identifier is None:
             raise NotFound(self.type_name, str(None))
+        else:
+            return typing.cast(str, identifier)
