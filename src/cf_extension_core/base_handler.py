@@ -1,6 +1,6 @@
 import logging
 import typing
-from typing import TypeVar, Generic, Optional, MutableMapping, Any, TYPE_CHECKING
+from typing import TypeVar, Generic, MutableMapping, Any, TYPE_CHECKING
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy
 from cloudformation_cli_python_lib.interface import (
     BaseModel,
@@ -42,7 +42,7 @@ LOG = logging.getLogger(__name__)
 class BaseHandler(Generic[T, K]):
     def __init__(
         self,
-        session: Optional[SessionProxy],
+        session: SessionProxy,
         request: K,
         callback_context: MutableMapping[str, Any],
         type_name: str,
@@ -50,7 +50,7 @@ class BaseHandler(Generic[T, K]):
         total_timeout_in_minutes: int,
         cf_core_log_level: int = logging.INFO,
     ):
-        self.session: Optional[SessionProxy] = session
+        self.session: SessionProxy = session
         self.request: K = request
         self.callback_context: MutableMapping[str, Any] = callback_context
         self.db_resource: object = db_resource

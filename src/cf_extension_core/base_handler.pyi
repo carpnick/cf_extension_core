@@ -19,21 +19,21 @@ from cf_extension_core.resource_update import ResourceUpdate as ResourceUpdate
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy as SessionProxy
 from cloudformation_cli_python_lib.interface import ProgressEvent
 from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
-from typing import Any, MutableMapping, Optional, TypeVar, Generic, TYPE_CHECKING
+from typing import Any, MutableMapping, TypeVar, Generic, TYPE_CHECKING
 
 T = TypeVar("T")
 K = TypeVar("K")
 LOG: Incomplete
 
 class BaseHandler(Generic[T, K]):
-    session: Optional[SessionProxy]
-    request: Optional[K]
+    session: SessionProxy
+    request: K
     callback_context: MutableMapping[str, Any]
     db_resource: DynamoDBServiceResource
     type_name: str
     def __init__(
         self,
-        session: Optional[SessionProxy],
+        session: SessionProxy,
         request: K,
         callback_context: MutableMapping[str, Any],
         type_name: str,
