@@ -51,16 +51,13 @@ jobs:
         run: poetry install --no-interaction -vvv
 
       #CI portion of the Job
-      - name: Generate typing stubs
-        run: |
-          source .venv/bin/activate
-          echo "Generate Stubs"
-          find src/ -type f -name '*.pyi' -exec rm {} +
-          stubgen --include-private src/ -o src/
-
       - name: Static Analysis and Code Formatting
         run: |
           source .venv/bin/activate
+          
+          echo "Run stubtest: stubtest cf_extension_core"
+          stubtest cf_extension_core
+          
           
           echo "Running mypy"
           mypy src/  --strict

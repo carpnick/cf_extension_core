@@ -7,7 +7,7 @@ __pycache__/
 ci_coverage/
 junit.xml
 get-poetry.py
-*.pyi
+
 
 # C extensions
 *.so

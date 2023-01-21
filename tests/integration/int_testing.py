@@ -1,12 +1,26 @@
 # Real use case
+import logging
+
+from cf_extension_core import CustomResourceHelpers, generate_dynamodb_resource, BaseHandler
+from tests.integration.gen_models import ResourceModel, ResourceHandlerRequest
 
 
-# import cf_extension_core as wrapper
-# wrapper.
-#
-# def create_handler():
-#     wrapper.
-#     wrapper.initialize_handler(None, 1)
-#
-#     with wrapper.create_resource(None,"",None,None) as db:
-#         db.set_resource_created()
+class TestHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
+    def __init__(self) -> None:
+        super().__init__(
+            None,
+            ResourceHandlerRequest("", None, None, None, None, None, None, None, None, None, None, None, None, None),
+            {},
+            "",
+            generate_dynamodb_resource(None),
+            1,
+            logging.DEBUG,
+        )
+
+    def test_method(self) -> None:
+        pass
+
+
+def create_handler() -> None:
+    CustomResourceHelpers.generate_id_resource(stack_id="", logical_resource_id="", resource_identifier="s")
+    generate_dynamodb_resource(session_proxy=None)

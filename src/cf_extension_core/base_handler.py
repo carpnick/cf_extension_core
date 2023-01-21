@@ -16,9 +16,7 @@ from cf_extension_core.resource_read import ResourceRead
 from cf_extension_core.resource_update import ResourceUpdate
 
 if TYPE_CHECKING:
-    from mypy_boto3_dynamodb.service_resource import (
-        DynamoDBServiceResource as DynamoDBServiceResource,
-    )
+    from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
 else:
     DynamoDBServiceResource = object
 
@@ -52,11 +50,11 @@ class BaseHandler(Generic[T, K]):
         total_timeout_in_minutes: int,
         cf_core_log_level: int = logging.INFO,
     ):
-        self.session = session
+        self.session: Optional[SessionProxy] = session
         self.request: K = request
-        self.callback_context = callback_context
-        self.db_resource = db_resource
-        self.type_name = type_name
+        self.callback_context: MutableMapping[str, Any] = callback_context
+        self.db_resource: object = db_resource
+        self.type_name: str = type_name
 
         initialize_handler(
             callback_context=self.callback_context, total_allowed_time_in_minutes=total_timeout_in_minutes
@@ -71,11 +69,11 @@ class BaseHandler(Generic[T, K]):
         # https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249
         self.callback_context["working_model"] = data.__dict__
 
-    def get_model_from_callback(self, cls: typing.Type[T] = T) -> T:
+    def get_model_from_callback(self, cls: typing.Type[T] = typing.Type[T]) -> T:
         return typing.cast(T, self._class_type_t()._deserialize(self.callback_context["working_model"]))
 
     # Total hack - but works to use generics like I am trying to use them in the get_model_from_callback method
-    def _class_type_t(self, cls: typing.Type[T] = T) -> T:
+    def _class_type_t(self, cls: typing.Type[T] = typing.Type[T]) -> T:
         orig_bases = self.__class__.__orig_bases__
         assert len(orig_bases) == 1
         real_base = orig_bases[0]

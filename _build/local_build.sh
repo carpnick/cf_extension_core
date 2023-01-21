@@ -4,9 +4,9 @@ set -e
 echo "Installing files"
 poetry install --no-interaction
 
-echo "Generate files"
-find src/ -type f -name '*.pyi' -exec rm {} +
-stubgen src/ -o src/  --include-private  #Only add include private for local dev work?  Not in Github actions?
+echo "Running Stub file checks: stubtest cf_extension_core"
+stubtest cf_extension_core
+
 
 
 echo "Running mypy: mypy src/ tests/ --strict"
