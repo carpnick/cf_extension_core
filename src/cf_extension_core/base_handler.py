@@ -8,6 +8,7 @@ from cloudformation_cli_python_lib.interface import (
     ProgressEvent,
     OperationStatus,
 )
+from cloudformation_cli_python_lib.exceptions import NotFound
 
 from cf_extension_core.resource_create import ResourceCreate
 from cf_extension_core.resource_delete import ResourceDelete
@@ -148,3 +149,7 @@ class BaseHandler(Generic[T, K]):
             resourceModel=None,
             message=message,
         )
+
+    def validate_identifier(self, identifier: typing.Optional[str]) -> None:
+        if identifier is None:
+            raise NotFound(self.type_name, str(None))
