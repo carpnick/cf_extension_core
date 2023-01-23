@@ -1,0 +1,10 @@
+{
+  "CREATE": {
+    "/GroupName": "AWSControlTowerAdmins",
+    "/IdentityStoreId": "d-9c67127909"
+  },
+  "UPDATE": {
+    "/GroupName": "AWSAccountFactory",
+    "/IdentityStoreId": "d-9c67127909"
+  }
+}

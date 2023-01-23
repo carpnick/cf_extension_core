@@ -49,14 +49,15 @@ class ResourceBase:
 
     # Business logic for saving Model to Dynamo for RO use cases primarily#######
     class _ResourceData:
+
+        # Not meant for security - Only make it non-human readable/editable
         _HELPER_KEY = "SleJXVw-6uvCUbd3whNDafJZ-Fc2UU0iQ1NiRCDY2dY="
         T = TypeVar("T", bound=Optional[_BaseModel])
 
         @staticmethod
         def _model_to_string(model: T) -> str:
 
-            # MODEL is not serializable
-            #
+            # MODEL is not serializable - use class method to do it
             mystr = json.dumps(model._serialize())  # type: ignore
             return Fernet(ResourceBase._ResourceData._HELPER_KEY.encode()).encrypt(mystr.encode()).decode()
 
