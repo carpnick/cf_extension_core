@@ -52,11 +52,12 @@ class BaseHandler(Generic[T, K]):
         total_timeout_in_minutes: int,
         cf_core_log_level: int = logging.INFO,
     ):
-        self.session: SessionProxy = session
-        self.request: K = request
-        self.callback_context: MutableMapping[str, Any] = callback_context
-        self.db_resource: object = db_resource
-        self.type_name: str = type_name
+        self._session: SessionProxy = session
+        self._request: K = request
+        self._callback_context: MutableMapping[str, Any] = callback_context
+        self._db_resource: object = db_resource
+        self._type_name: str = type_name
+        self._total_timeout_in_minutes: int = total_timeout_in_minutes
 
         initialize_handler(
             callback_context=self.callback_context, total_allowed_time_in_minutes=total_timeout_in_minutes
@@ -67,6 +68,30 @@ class BaseHandler(Generic[T, K]):
         # Validation call on construction
         self._class_type_t()
 
+    @property
+    def total_timeout_in_minutes(self) -> int:
+        return self._total_timeout_in_minutes
+
+    @property
+    def type_name(self) -> str:
+        return self._type_name
+
+    @property
+    def db_resource(self) -> DynamoDBServiceResource:
+        return self._db_resource
+
+    @property
+    def callback_context(self) -> MutableMapping[str, Any]:
+        return self._callback_context
+
+    @property
+    def request(self) -> K:
+        return self._request
+
+    @property
+    def session(self) -> SessionProxy:
+        return self._session
+
     def save_model_to_callback(self, data: T) -> None:
         """
         Saves the ResourceModel to the callback context in a way we can expect.
@@ -74,7 +99,7 @@ class BaseHandler(Generic[T, K]):
         :return:
         """
         # https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249
-        self.callback_context["working_model"] = data.__dict__
+        self._callback_context["working_model"] = data.__dict__
 
     def get_model_from_callback(self, cls: typing.Type[T] = typing.Type[T]) -> T:
         """
@@ -82,7 +107,7 @@ class BaseHandler(Generic[T, K]):
         :param cls:
         :return:
         """
-        return typing.cast(T, self._class_type_t()._deserialize(self.callback_context["working_model"]))
+        return typing.cast(T, self._class_type_t()._deserialize(self._callback_context["working_model"]))
 
     # Total hack - but works to use generics like I am trying to use them in the get_model_from_callback method
     def _class_type_t(self, cls: typing.Type[T] = typing.Type[T]) -> T:
@@ -113,7 +138,7 @@ class BaseHandler(Generic[T, K]):
         Use as a context manager in the CreateHandler class.  See example_projects directory
         :return:
         """
-        return create_resource(request=self.request, type_name=self.type_name, db_resource=self.db_resource)
+        return create_resource(request=self._request, type_name=self._type_name, db_resource=self._db_resource)
 
     def update_resource(self, primary_identifier: str) -> ResourceUpdate:
         """
@@ -123,9 +148,9 @@ class BaseHandler(Generic[T, K]):
         :return:
         """
         return update_resource(
-            request=self.request,
-            type_name=self.type_name,
-            db_resource=self.db_resource,
+            request=self._request,
+            type_name=self._type_name,
+            db_resource=self._db_resource,
             primary_identifier=primary_identifier,
         )
 
@@ -134,7 +159,11 @@ class BaseHandler(Generic[T, K]):
         Use as a context manager in the ListHandler class.
         :return:
         """
-        return list_resource(request=self.request, type_name=self.type_name, db_resource=self.db_resource)
+        return list_resource(
+            request=self._request,
+            type_name=self._type_name,
+            db_resource=self._db_resource,
+        )
 
     def read_resource(self, primary_identifier: str) -> ResourceRead:
         """
@@ -144,9 +173,9 @@ class BaseHandler(Generic[T, K]):
         :return:
         """
         return read_resource(
-            request=self.request,
-            type_name=self.type_name,
-            db_resource=self.db_resource,
+            request=self._request,
+            type_name=self._type_name,
+            db_resource=self._db_resource,
             primary_identifier=primary_identifier,
         )
 
@@ -158,9 +187,9 @@ class BaseHandler(Generic[T, K]):
         :return:
         """
         return delete_resource(
-            request=self.request,
-            type_name=self.type_name,
-            db_resource=self.db_resource,
+            request=self._request,
+            type_name=self._type_name,
+            db_resource=self._db_resource,
             primary_identifier=primary_identifier,
         )
 
@@ -173,7 +202,7 @@ class BaseHandler(Generic[T, K]):
         """
         return ProgressEvent(
             status=OperationStatus.IN_PROGRESS,
-            callbackContext=self.callback_context,
+            callbackContext=self._callback_context,
             callbackDelaySeconds=call_back_delay_seconds,
             resourceModel=self.get_model_from_callback(),
             message=message,

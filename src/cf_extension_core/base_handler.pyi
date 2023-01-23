@@ -26,11 +26,12 @@ K = TypeVar("K")
 LOG: Incomplete
 
 class BaseHandler(Generic[T, K]):
-    session: SessionProxy
-    request: K
-    callback_context: MutableMapping[str, Any]
-    db_resource: DynamoDBServiceResource
-    type_name: str
+    _session: SessionProxy
+    _request: K
+    _callback_context: MutableMapping[str, Any]
+    _db_resource: DynamoDBServiceResource
+    _type_name: str
+    _total_timeout_in_minutes: int
     def __init__(
         self,
         session: SessionProxy,
@@ -41,6 +42,18 @@ class BaseHandler(Generic[T, K]):
         total_timeout_in_minutes: int,
         cf_core_log_level: int = ...,
     ) -> None: ...
+    @property
+    def session(self) -> SessionProxy: ...
+    @property
+    def request(self) -> K: ...
+    @property
+    def callback_context(self) -> MutableMapping[str, Any]: ...
+    @property
+    def db_resource(self) -> DynamoDBServiceResource: ...
+    @property
+    def type_name(self) -> str: ...
+    @property
+    def total_timeout_in_minutes(self) -> str: ...
     def save_model_to_callback(self, data: T) -> None: ...
     def get_model_from_callback(self, cls: typing.Type[T] = ...) -> T: ...
     def _class_type_t(self, cls: typing.Type[T] = ...) -> T: ...
