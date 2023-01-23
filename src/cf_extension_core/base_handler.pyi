@@ -54,3 +54,17 @@ class BaseHandler(Generic[T, K]):
     def return_success_event(self, resource_model: T, message: str = ...) -> ProgressEvent: ...
     def return_success_delete_event(self, message: str = ...) -> ProgressEvent: ...
     def validate_identifier(self, identifier: typing.Optional[str]) -> str: ...
+    def _stabilize(
+        self,
+        function: typing.Callable[[], bool],
+        sleep_seconds: int = 3,
+        callback_delay: int = 1,
+        callback_message: str = "",
+    ) -> typing.Union[None, ProgressEvent]: ...
+    def run_call_chain_with_stabilization(
+        self,
+        func_list: list[typing.Callable[[], bool]],
+        func_retries_sleep_time: int = 3,
+        callback_delay: int = 1,
+        callback_message: str = "",
+    ) -> typing.Union[ProgressEvent, None]: ...

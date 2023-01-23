@@ -1,5 +1,6 @@
 import logging
 import typing
+import time
 from typing import TypeVar, Generic, MutableMapping, Any, TYPE_CHECKING
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy
 from cloudformation_cli_python_lib.interface import (
@@ -67,10 +68,20 @@ class BaseHandler(Generic[T, K]):
         self._class_type_t()
 
     def save_model_to_callback(self, data: T) -> None:
+        """
+        Saves the ResourceModel to the callback context in a way we can expect.
+        :param data:
+        :return:
+        """
         # https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249
         self.callback_context["working_model"] = data.__dict__
 
     def get_model_from_callback(self, cls: typing.Type[T] = typing.Type[T]) -> T:
+        """
+        Loads the ResourceModel data from the callback context and deserializes it into the proper object type
+        :param cls:
+        :return:
+        """
         return typing.cast(T, self._class_type_t()._deserialize(self.callback_context["working_model"]))
 
     # Total hack - but works to use generics like I am trying to use them in the get_model_from_callback method
@@ -91,12 +102,26 @@ class BaseHandler(Generic[T, K]):
         return myclass1
 
     def handler_is_timing_out(self) -> bool:
+        """
+        Determines if the handler is timing out in its current execution environment.
+        :return:
+        """
         return CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout()
 
     def create_resource(self) -> ResourceCreate:
+        """
+        Use as a context manager in the CreateHandler class.  See example_projects directory
+        :return:
+        """
         return create_resource(request=self.request, type_name=self.type_name, db_resource=self.db_resource)
 
     def update_resource(self, primary_identifier: str) -> ResourceUpdate:
+        """
+        Use as a context manager in the UpdateHandler class and optionally the CreateHandler.
+        See example_projects directory
+        :param primary_identifier:
+        :return:
+        """
         return update_resource(
             request=self.request,
             type_name=self.type_name,
@@ -105,9 +130,19 @@ class BaseHandler(Generic[T, K]):
         )
 
     def list_resource(self) -> ResourceList:
+        """
+        Use as a context manager in the ListHandler class.
+        :return:
+        """
         return list_resource(request=self.request, type_name=self.type_name, db_resource=self.db_resource)
 
     def read_resource(self, primary_identifier: str) -> ResourceRead:
+        """
+        Use as a context manager in the ReadHandler class.
+        See example_projects directory
+        :param primary_identifier:
+        :return:
+        """
         return read_resource(
             request=self.request,
             type_name=self.type_name,
@@ -116,6 +151,12 @@ class BaseHandler(Generic[T, K]):
         )
 
     def delete_resource(self, primary_identifier: str) -> ResourceDelete:
+        """
+        Use as a context manager in the DeleteHandler class.
+        See example_projects directory
+        :param primary_identifier:
+        :return:
+        """
         return delete_resource(
             request=self.request,
             type_name=self.type_name,
@@ -124,6 +165,12 @@ class BaseHandler(Generic[T, K]):
         )
 
     def return_in_progress_event(self, message: str = "", call_back_delay_seconds: int = 1) -> ProgressEvent:
+        """
+        Use this only in the Create/Delete/Update handlers.  The Read/List handlers are now allowed to use "IN_PROGRESS"
+        :param message:
+        :param call_back_delay_seconds:
+        :return:
+        """
         return ProgressEvent(
             status=OperationStatus.IN_PROGRESS,
             callbackContext=self.callback_context,
@@ -133,6 +180,12 @@ class BaseHandler(Generic[T, K]):
         )
 
     def return_success_event(self, resource_model: T, message: str = "") -> ProgressEvent:
+        """
+        Use this method for  Create/Update/Read handlers when the model has been partially/completely defined
+        :param resource_model:
+        :param message:
+        :return:
+        """
         return ProgressEvent(
             status=OperationStatus.SUCCESS,
             callbackContext=None,
@@ -142,6 +195,11 @@ class BaseHandler(Generic[T, K]):
         )
 
     def return_success_delete_event(self, message: str = "") -> ProgressEvent:
+        """
+        Use this method if your DeleteHandler properly deleted the resource
+        :param message:
+        :return:
+        """
         return ProgressEvent(
             status=OperationStatus.SUCCESS,
             callbackContext=None,
@@ -151,7 +209,74 @@ class BaseHandler(Generic[T, K]):
         )
 
     def validate_identifier(self, identifier: typing.Optional[str]) -> str:
+        """
+        Validates the identifier as being filled out and a str.
+
+        If identifier is None raises exceiption of `NotFound` from CF Library
+        :param identifier: Optional[str] identifier from ResourceModel object.
+        :return: identifier as a str
+        """
         if identifier is None:
             raise NotFound(self.type_name, str(None))
         else:
             return typing.cast(str, identifier)
+
+    def _stabilize(
+        self,
+        function: typing.Callable[[], bool],
+        sleep_seconds: int = 3,
+        callback_delay: int = 1,
+        callback_message: str = "",
+    ) -> typing.Union[None, ProgressEvent]:
+        while True:
+            if self.handler_is_timing_out():
+                LOG.info("Returning in progress due to handler timing out")
+                return self.return_in_progress_event(
+                    message=callback_message,
+                    call_back_delay_seconds=callback_delay,
+                )
+            else:
+                # Assumption - if callback needs to be updated - happening in the functions being called
+                # Functions will skip through if already invoked and return true
+                # Note to implementors - make your functions idempotent
+                complete = function()
+                if complete:
+                    return None
+                else:
+                    time.sleep(sleep_seconds)
+
+    def run_call_chain_with_stabilization(
+        self,
+        func_list: list[typing.Callable[[], bool]],
+        func_retries_sleep_time: int = 3,
+        callback_delay: int = 1,
+        callback_message: str = "",
+    ) -> typing.Union[ProgressEvent, None]:
+        """
+        Runs a list of lambda functions with included stabilization if required.
+
+        The stabilization parameters (func_retries_sleep_time) control how often your method gets called.
+
+        The callback_delay and callback_message are used in case the function needs to timeout before all functions are
+        executed.
+
+        :param func_list: List of lambda functions pointing at your implementation methods.
+        Each method must return True/False - True if executed to complete or False needs re-execution.
+
+        :param func_retries_sleep_time: Time in between executing the same function again.
+        :param callback_delay: Total time in seconds before Cloudformation recalls the function
+        :param callback_message: Message to include in callback message IE ProgressEvent Object.
+        :return: ProgressEvent if timed out or None which means all functions ran to complete.
+        """
+        for func in func_list:
+            pe: typing.Union[None, ProgressEvent] = self._stabilize(
+                function=func,
+                sleep_seconds=func_retries_sleep_time,
+                callback_delay=callback_delay,
+                callback_message=callback_message,
+            )
+            if pe is not None:
+                return pe
+
+        # We are done
+        return None
