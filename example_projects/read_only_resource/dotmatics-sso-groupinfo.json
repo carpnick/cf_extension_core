@@ -52,7 +52,8 @@
                 "dynamodb:UpdateTable",
                 "dynamodb:DescribeTable",
 
-                "identitystore:ListGroups"
+                "identitystore:ListGroups",
+                "identitystore:DescribeGroup"
             ],
             "timeoutInMinutes": 2
         },
@@ -66,7 +67,8 @@
                 "dynamodb:UpdateTable",
                 "dynamodb:DescribeTable",
 
-                "identitystore:ListGroups"
+                "identitystore:ListGroups",
+                "identitystore:DescribeGroup"
             ],
             "timeoutInMinutes": 2
         },
@@ -80,7 +82,7 @@
                 "dynamodb:UpdateTable",
                 "dynamodb:DescribeTable",
 
-                "identitystore:ListGroups"
+                "identitystore:DescribeGroup"
             ],
             "timeoutInMinutes": 2
         },
@@ -92,9 +94,7 @@
                 "dynamodb:GetItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:UpdateTable",
-                "dynamodb:DescribeTable",
-
-                "identitystore:ListGroups"
+                "dynamodb:DescribeTable"
             ],
             "timeoutInMinutes": 2
         }

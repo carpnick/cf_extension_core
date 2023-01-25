@@ -11,10 +11,10 @@ import cf_extension_core as core
 
 # Locals
 from .models import ResourceHandlerRequest, ResourceModel
-from .create_handler import CreateHandler
-from .read_handler import ReadHandler
-from .delete_handler import DeleteHandler
-from .update_handler import UpdateHandler
+from dotmatics_sso_groupinfo.create_handler import CreateHandler
+from dotmatics_sso_groupinfo.read_handler import ReadHandler
+from dotmatics_sso_groupinfo.delete_handler import DeleteHandler
+from dotmatics_sso_groupinfo.update_handler import UpdateHandler
 
 
 # Use this logger to forward log messages to CloudWatch Logs.
@@ -37,7 +37,7 @@ def create_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - https://shorturl.at/gHK46
+        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
@@ -53,7 +53,7 @@ def update_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - https://shorturl.at/gHK46
+        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
@@ -69,7 +69,7 @@ def delete_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - https://shorturl.at/gHK46
+        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
@@ -85,5 +85,5 @@ def read_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - https://shorturl.at/gHK46
+        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
