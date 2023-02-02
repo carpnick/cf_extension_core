@@ -45,6 +45,12 @@
 
 ## Local laptop contract test execution
 - Because of [this](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/247) issue, change template.yaml to look at `src/` instead of `build/`.
+- Also if on a MAC M1
+  - Add this section to each Function definition in the template file:
+    ```
+     Architectures:
+       - arm64
+    ```
 - SAM CLI default region is `us-east-1`, so if contract tests need to run in different region, you pass the `sam local start-lambda` call a `--region xxxxxx` parameter.  
 - Contract Test Inputs
   - I chose to go with `overrides.json` so I could control just a couple properties.  If you choose to use input directory - dont know ramifications.  **Here be dragons potentially**.
@@ -74,16 +80,23 @@
       - `cfn submit --role-arn arn:aws:iam::xxxxxxxxxx:role/NickTest-ExecutionRole-RYGSUI7UI0RS --region eu-west-2 --set-default`
       - Replace this `role-arn` parameter with the role deployed in the second bullet above.
       - This will automatically create another stack called: `CloudFormationManagedUploadInfrastructure` - this will need to be deleted after you are happy with the contract tests.
-  - Option 2 - If you want to deploy with Cloudformation:
-    - Run `cfn submit --dry-run` - it will generate a package locally in your source repository
-    - Upload it to a manually created S3 bucket.  Preferably the build bucket in the master account
-    - Run the template `test_deploy/2extension/aws_contract_tests/deploy_extension.yaml` to deploy the resource
-    - Create an S3 bucket manually for contract test results
-- Run the Contract Tests
-  - Example Command `aws cloudformation test-type --arn arn:aws:cloudformation:eu-west-2:xxxxxxxxxxx:type/resource/Dotmatics-SSO-GroupInfo --type RESOURCE  --log-delivery-bucket xxxxxxx-artifactbucket-1ht2bc69x9z9j --region eu-west-2`
-  - Will run the contract tests in an ASYNC way.  Check S3 bucket for results.
-  - `--arn` parameter is the ARN of your registered extension
-  - `--log-delivery-bucket` is either from `CloudFormationManagedUploadInfrastructure` infrastructure stack if deployed with `cfn submit` or the manually created log bucket if created with cloudformation
+    - Option 2 - If you want to deploy with Cloudformation:
+      - Run `cfn submit --dry-run` - it will generate a package locally in your source repository
+      - Upload it to a manually created S3 bucket.  Preferably the build bucket in the master account
+      - Run the template `test_deploy/2extension/aws_contract_tests/deploy_extension.yaml` to deploy the resource
+      - Create an S3 bucket manually for contract test results or just use the same bucket that you manually uploaded the artifact to.
+  - Run the Contract Tests
+    - Example Command `aws cloudformation test-type --arn arn:aws:cloudformation:eu-west-2:xxxxxxxxxxx:type/resource/Dotmatics-SSO-GroupInfo --type RESOURCE  --log-delivery-bucket xxxxxxx-artifactbucket-1ht2bc69x9z9j --region eu-west-2`
+    - Will run the contract tests in an ASYNC way.  Check S3 bucket for results.  First a `README` file will show up in the bucket and tell you the location of the results. (Default path: `CloudFormation/ContractTestResults`)
+    - `--arn` parameter is the ARN of your registered extension
+    - `--log-delivery-bucket` is either from `CloudFormationManagedUploadInfrastructure` infrastructure stack if deployed with `cfn submit` or the manually created/used log bucket if created with cloudformation
+  - After complete - Delete all resources.  Cloudwatch Log groups, S3 buckets, KMS keys, CF Stacks, etc etc.
+
+# End to End Testing
+  - Assuming `cfn submit --dry-run` was run and/or the build was uploaded to an S3 bucket somewhere you have access to. (X86/AMD64 only for now)
+  - Run `test_deploy/1pre_reqs` in your AWS account if required.
+  - Run `test_deploy/2extension/end_to_end/1deploy_extension.yaml`.  Will deploy all needed items to do an End to End test.  If there are issues, look for the cloudwatch log group
+  - Run test usage of custom extension -  `test_deploy/2extension/end_to_end/2use_extension.yaml`
 
 # Other Dev Resources
 - mypy - [https://mypy.readthedocs.io/en/stable/getting_started.html](https://mypy.readthedocs.io/en/stable/getting_started.html) 

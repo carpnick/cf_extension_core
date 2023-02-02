@@ -20,7 +20,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !Ref RoleArn
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo4.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo.zip"
 
   #Guarantee latest = default
   ResourceDefaultVersion:

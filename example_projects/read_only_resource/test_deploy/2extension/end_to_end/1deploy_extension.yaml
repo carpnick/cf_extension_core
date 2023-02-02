@@ -76,7 +76,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                   - "logs:CreateLogGroup"
                    - "logs:CreateLogStream"
                    - "logs:DescribeLogGroups"
                    - "logs:DescribeLogStreams"
@@ -92,7 +91,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !GetAtt ExecutionRole.Arn #Required for all our private extensions
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo4.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo.zip"
       LoggingConfig:
         LogGroupName: !Ref myLogGroup
         LogRoleArn: !GetAtt LogRole.Arn

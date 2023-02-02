@@ -11,8 +11,7 @@
     "properties": {
         "GroupName": {
             "description": "A GroupName that exists within AWS SSO.",
-            "type": "string",
-            "pattern": "^[\\\\p{L}\\\\p{M}\\\\p{S}\\\\p{N}\\\\p{P}\\\\t\\\\n\\\\r  \\u3000]+$"
+            "type": "string"
         },
         "IdentityStoreId": {
             "description": "The Identity Store ID to help find the group name.",
