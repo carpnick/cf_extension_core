@@ -25,21 +25,35 @@
     - Install Requirements - `pip3 install -r requirements_dev.txt`
     - Run local Build: `sh _build/local_build.sh**`
 ## CI System Execution
-  - ```
-    #Assuming latest cfn and python lib are installed, NOT in virtual env
-    pip3 install cloudformation-cli --upgrade
-    pip3 install cloudformation-cli-python-plugin --upgrade
+    - ```
+      #Assuming latest cfn and python lib are installed, NOT in virtual env
+      pip3 install cloudformation-cli --upgrade
+      pip3 install cloudformation-cli-python-plugin --upgrade
     
-    #Activate/Create virutal env
-    python3 -m venv venv
-    source venv/bin/activate
+      #Activate/Create virutal env
+      python3 -m venv venv
+      source venv/bin/activate
     
-    #Install requirements
-    pip3 install -r requirements_dev.txt
+      #Install requirements
+      pip3 install -r requirements_dev.txt
     
-    # Run effectively the local build
-    sh _build/local_build.sh
-    ```
+      # Run effectively the local build
+      sh _build/local_build.sh
+    
+      #Deploy/Archive artifact plan
+        # For each active region in Dotmatics (hard coded in jenkins lib)
+          # Upload to S3 regional builds bucket in the aws master account
+          # Modify template_deploy_regional_extension.yaml with new S3 Key ("Default Value") and upload to same folder as build artifact.
+          # Upload for the branch, to the latest folder the modified template_deploy_regional_extension.yaml file
+          (We are explicitly making a decision here that this one file creates everything needed to register the custom extension, even if that means duplicating IAM roles in a single account in multi-region scenario)
+        
+        # BELOW NOT PART OF BUILD
+          # Global deploy plan from Framework
+          # Stack 1
+            # Custom Extension Stack
+            # Points at master/latest/template_deploy_regional_extension.yaml file for each custom resource using substacks
+            # (All regions will look at master regional builds bucket to pull artifacts from.  So no worrying about anything else other than looking at a specific key - the key will be the same in all regions)
+      ```
 
 # Contract Tests
 

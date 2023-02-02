@@ -91,7 +91,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !GetAtt ExecutionRole.Arn #Required for all our private extensions
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo2.zip"
       LoggingConfig:
         LogGroupName: !Ref myLogGroup
         LogRoleArn: !GetAtt LogRole.Arn
