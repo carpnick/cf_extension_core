@@ -10,19 +10,19 @@
     },
     "properties": {
         "GroupName": {
-            "description": "A GroupName that exists within AWS SSO.",
-            "type": "string",
-            "pattern": "^[\\\\p{L}\\\\p{M}\\\\p{S}\\\\p{N}\\\\p{P}\\\\t\\\\n\\\\r  \\u3000]+$"
+            "description": "A GroupName that exists within AWS SSO. Any ASCII character - Dotmatics",
+            "type": "string"
+
         },
         "IdentityStoreId": {
             "description": "The Identity Store ID to help find the group name.",
-            "type": "string",
-            "pattern": "^d-[0-9a-f]{10}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            "type": "string"
+
         },
         "GroupId": {
             "description": "The GroupId found based on the GroupName.",
-            "type": "string",
-            "pattern": "^([0-9a-f]{10}-|)[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$"
+            "type": "string"
+
         },
         "GeneratedReadOnlyId": {
             "description": "The generated read-only identifier.",
@@ -54,8 +54,7 @@
 
                 "identitystore:ListGroups",
                 "identitystore:DescribeGroup"
-            ],
-            "timeoutInMinutes": 2
+            ]
         },
         "update": {
             "permissions": [
@@ -69,8 +68,7 @@
 
                 "identitystore:ListGroups",
                 "identitystore:DescribeGroup"
-            ],
-            "timeoutInMinutes": 2
+            ]
         },
         "read": {
             "permissions": [
@@ -83,8 +81,7 @@
                 "dynamodb:DescribeTable",
 
                 "identitystore:DescribeGroup"
-            ],
-            "timeoutInMinutes": 2
+            ]
         },
         "delete": {
             "permissions": [
@@ -95,8 +92,7 @@
                 "dynamodb:UpdateItem",
                 "dynamodb:UpdateTable",
                 "dynamodb:DescribeTable"
-            ],
-            "timeoutInMinutes": 2
+            ]
         }
     }
 }

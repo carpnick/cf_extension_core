@@ -31,13 +31,11 @@ Properties:
 
 #### GroupName
 
-A GroupName that exists within AWS SSO.
+A GroupName that exists within AWS SSO. Any ASCII character - Dotmatics
 
 _Required_: Yes
 
 _Type_: String
-
-_Pattern_: <code>^[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}\\t\\n\\r  \u3000]+$</code>
 
 _Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 
@@ -48,8 +46,6 @@ The Identity Store ID to help find the group name.
 _Required_: Yes
 
 _Type_: String
-
-_Pattern_: <code>^d-[0-9a-f]{10}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$</code>
 
 _Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 

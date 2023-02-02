@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Deploys extension with partnering IAM Role and Cloudwatch resources 
+  This is also an example of how we would reference the cf_extensions bucket in every account
+
+
+Parameters:
+
+  CFExtensionBucket:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /cloud/public/regional/s3/v1/buckets/cf_extensions/name
+
+Resources:
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - resources.cloudformation.amazonaws.com
+                - cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+#            Condition:
+#              StringEquals:
+#                aws:SourceAccount: !Ref AWS::AccountId
+#              StringLike:
+#                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/*"
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                - "dynamodb:CreateTable"
+                - "dynamodb:DeleteItem"
+                - "dynamodb:DescribeTable"
+                - "dynamodb:GetItem"
+                - "dynamodb:PutItem"
+                - "dynamodb:UpdateItem"
+                - "dynamodb:UpdateTable"
+                - "identitystore:DescribeGroup"
+                - "identitystore:ListGroups"
+                Resource: "*"
+
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "kms:Encrypt"
+                  - "kms:Decrypt"
+                  - "kms:ReEncrypt*"
+                  - "kms:GenerateDataKey*"
+                  - "kms:DescribeKey"
+                Resource: "*"
+
+  #Logging
+  myLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+
+  LogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              StringLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/*"
+      Path: "/"
+      Policies:
+        - PolicyName: Logging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                   - "logs:CreateLogGroup"
+                   - "logs:CreateLogStream"
+                   - "logs:DescribeLogGroups"
+                   - "logs:DescribeLogStreams"
+                   - "logs:PutLogEvents"
+                   - "cloudwatch:ListMetrics"
+                   - "cloudwatch:PutMetricData"
+                Resource: "*"
+#
+#
+#  #Register type to be used
+#  ResourceVersion:
+#    Type: AWS::CloudFormation::ResourceVersion
+#    Properties:
+#      TypeName: Dotmatics::SSO::GroupInfo
+#      ExecutionRoleArn: !GetAtt ExecutionRole.Arn #Required for all our private extensions
+#      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo4.zip"
+##      LoggingConfig:
+##        LogGroupName: !Ref myLogGroup
+##        LogRoleArn: !GetAtt LogRole.Arn
+#
+#  #Guarantee latest = default
+#  ResourceDefaultVersion:
+#    Type: AWS::CloudFormation::ResourceDefaultVersion
+#    Properties:
+#      TypeVersionArn: !Ref ResourceVersion
