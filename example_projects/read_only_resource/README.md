@@ -23,7 +23,8 @@
     - PRE-Req - Install [CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html), [AWS CLI](https://aws.amazon.com/cli/) and [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
     - Create a virtual environment
     - Install Requirements - `pip3 install -r requirements_dev.txt`
-    - Run local Build: `sh _build/local_build.sh**`
+    - Run local Build: `sh _build/local_build.sh`
+
 ## CI System Execution
     - ```
       #Assuming latest cfn and python lib are installed, NOT in virtual env
@@ -41,10 +42,11 @@
       sh _build/local_build.sh
     
       #Deploy/Archive artifact plan
+        # Modify template_deploy_regional_extension.yaml with new S3 Key planned based on branch name and build job
+
         # For each active region in Dotmatics (hard coded in jenkins lib)
-          # Upload to S3 regional builds bucket in the aws master account
-          # Modify template_deploy_regional_extension.yaml with new S3 Key ("Default Value") and upload to same folder as build artifact.
-          # Upload for the branch, to the latest folder the modified template_deploy_regional_extension.yaml file
+          # Upload the artifact(zip) and template_deploy_regional_extension.yaml(modified) to the S3 regional builds bucket in the aws master account
+          # Upload to the 'latest' folder, for the branch,  the template_deploy_regional_extension.yaml(modified) file
           (We are explicitly making a decision here that this one file creates everything needed to register the custom extension, even if that means duplicating IAM roles in a single account in multi-region scenario)
         
         # BELOW NOT PART OF BUILD

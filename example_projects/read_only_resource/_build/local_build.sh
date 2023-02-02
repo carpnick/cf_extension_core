@@ -5,13 +5,13 @@ cfn validate
 
 echo "Running cfn generate: cfn generate.  Also determining if files are out of date in git"
 cfn generate
-#set +e
-#git diff --compact-summary --exit-code
-#if [ $? -ne 0  ]; then
-#  echo "'cfn generate' generated some changes. Run it locally and commit changes."
-#  exit 1
-#fi
-#set -e
+set +e
+git diff --compact-summary --exit-code
+if [ $? -ne 0  ]; then
+  echo "'cfn generate' generated some changes. Run it locally and commit changes."
+  exit 1
+fi
+set -e
 
 echo "Running mypy: mypy src/ tests/ --ignore-missing-imports --strict"
 mypy src/ tests/ --ignore-missing-imports --strict
