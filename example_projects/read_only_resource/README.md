@@ -71,7 +71,7 @@
   - Build the extension locally (until CI is setup)
     - This must be done on an X86/AMD64 system.  NOT supported by ARM today.
     - Option 1 - If you want to run with `cfn submit`:
-      - `cfn submit --role-arn arn:aws:iam::688601398555:role/NickTest-ExecutionRole-RYGSUI7UI0RS --region eu-west-2 --set-default`
+      - `cfn submit --role-arn arn:aws:iam::xxxxxxxxxx:role/NickTest-ExecutionRole-RYGSUI7UI0RS --region eu-west-2 --set-default`
       - Replace this `role-arn` parameter with the role deployed in the second bullet above.
       - This will automatically create another stack called: `CloudFormationManagedUploadInfrastructure` - this will need to be deleted after you are happy with the contract tests.
   - Option 2 - If you want to deploy with Cloudformation:
@@ -80,7 +80,7 @@
     - Run the template `test_deploy/2extension/aws_contract_tests/deploy_extension.yaml` to deploy the resource
     - Create an S3 bucket manually for contract test results
 - Run the Contract Tests
-  - Example Command `aws cloudformation test-type --arn arn:aws:cloudformation:eu-west-2:688601398555:type/resource/Dotmatics-SSO-GroupInfo --type RESOURCE  --log-delivery-bucket cloudformationmanageduploadinfrast-artifactbucket-1ht2bc69x9z9j --region eu-west-2`
+  - Example Command `aws cloudformation test-type --arn arn:aws:cloudformation:eu-west-2:xxxxxxxxxxx:type/resource/Dotmatics-SSO-GroupInfo --type RESOURCE  --log-delivery-bucket xxxxxxx-artifactbucket-1ht2bc69x9z9j --region eu-west-2`
   - Will run the contract tests in an ASYNC way.  Check S3 bucket for results.
   - `--arn` parameter is the ARN of your registered extension
   - `--log-delivery-bucket` is either from `CloudFormationManagedUploadInfrastructure` infrastructure stack if deployed with `cfn submit` or the manually created log bucket if created with cloudformation
