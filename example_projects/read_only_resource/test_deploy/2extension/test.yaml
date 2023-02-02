@@ -1,0 +1,11 @@
+
+
+dasdas:
+  Type: Dotmatics::AzureAD::Group
+  Properties:
+    ClientId: "s"               # WriteOnlyProperty
+    ClientSecret: "s"           # WriteOnlyProperty
+    TenantId: "d"               # CreateOnlyProperty
+    GroupOwnerAppName: "s"      # RO
+    GroupName: "s"
+    GroupID: "s"

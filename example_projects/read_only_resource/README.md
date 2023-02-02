@@ -16,8 +16,14 @@
 - Assume in the Read/Delete handler the only data given is a primary identifier.  All other parameters should come from OUR DB Model or read dynamically from resource
 - Only save/restore callback state using basehandler methods - `save_model_to_callback` and `get_model_from_callback`.  AWS doesnt store state properly in callback - these handle it for you.  See [this](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249)
 
-# Local Build  and CI Use Cases
+# Build and CI
 
+## Local Build
+  - To simulate a local build.  After cloning out source code:
+    - PRE-Req - Install [CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html), [AWS CLI](https://aws.amazon.com/cli/) and [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+    - Create a virtual environment
+    - Install Requirements - `pip3 install -r requirements_dev.txt`
+    - Run local Build: `sh _build/local_build.sh**`
 ## CI System Execution
   - ```
     #Assuming latest cfn and python lib are installed, NOT in virtual env
@@ -31,32 +37,17 @@
     #Install requirements
     pip3 install -r requirements_dev.txt
     
-    echo "Running cfn validate: cfn validate"
-    cfn validate
-    
-    echo "Running cfn generate: cfn generate"
-    cfn generate
-    
-    echo "Running mypy: mypy src/"
-    mypy src/
-    
-    echo "Running black:  black -l 120 --check --extend-exclude ".*models\.py" src/"
-    black -l 120 --check --extend-exclude ".*models\.py" src/
-    
-    echo "\nRunning flake8: flake8 --max-line-length 120 --per-file-ignores='src/**/models.py:F401,W391' src/"
-    flake8 --max-line-length 120 --per-file-ignores='src/**/models.py:F401,W391' src/
-    
-    echo "\nRunning pytest: "
-    #TODO
-    
-    echo "\n Running cfn submit for build verification: cfn submit --dry-run"
-    cfn submit --dry-run
+    # Run effectively the local build
+    sh _build/local_build.sh
     ```
-## Local contract test execution
+
+# Contract Tests
+
+## Local laptop contract test execution
 - Because of [this](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/247) issue, change template.yaml to look at `src/` instead of `build/`.
 - SAM CLI default region is `us-east-1`, so if contract tests need to run in different region, you pass the `sam local start-lambda` call a `--region xxxxxx` parameter.  
 - Contract Test Inputs
-  - I chose to go with `overrides.json` so I could control just a couple properties.  If you choose to use input directory - dont know ramifications.  Here be dragons potentially.
+  - I chose to go with `overrides.json` so I could control just a couple properties.  If you choose to use input directory - dont know ramifications.  **Here be dragons potentially**.
 - Contract tests do weird things 
   - In `contract_update_read` - It creates a resource, updates it with new parameters, reads with new parameters and then deletes with old parameters.
   - So what this means is we might not be able to trust resourceProperties as being the up to date resource properties.  So if our update properly updates the model, we should use the DB model as source of truth for resource properties if required.
@@ -67,11 +58,32 @@
   - This assumes you modified template file to point at `src/` instead of `build/` already
 - In a terminal run something like this to run lambda locally
   - `sam local start-lambda -l log.log  --region eu-west-2`
-- In another terminal run `cfn test`
+- In another terminal run `cfn test`.  Right now `cfn` command doesnt support a `--profile` option.  As an alternative, grab environment values from the SSO portal.
   - To run a specific contract test example: `cfn test  -- -k contract_create_delete --log-cli-level=DEBUG`
-- Wait for tests to finish running, contract tests should succeed.
+- Wait for tests to finish running, contract tests should succeed.  These should work on either X86/AMD64 or ARM architectures.
     
-
+## Contract Test Execution in AWS
+- If you want to run contract tests in AWS to debug an issue, this is supported.
+- ALERT - THIS REQUIRES an `X86/AMD64` output.  No using Mac M1 or ARM architectures
+- How to do it:
+  - Run `test_deploy/1pre_reqs` in your AWS account.
+  - Deploy helper role with `test_deploy/2extension/aws_contract_tests/contract_test_dependencies.yaml`
+  - Build the extension locally (until CI is setup)
+    - This must be done on an X86/AMD64 system.  NOT supported by ARM today.
+    - Option 1 - If you want to run with `cfn submit`:
+      - `cfn submit --role-arn arn:aws:iam::688601398555:role/NickTest-ExecutionRole-RYGSUI7UI0RS --region eu-west-2 --set-default`
+      - Replace this `role-arn` parameter with the role deployed in the second bullet above.
+      - This will automatically create another stack called: `CloudFormationManagedUploadInfrastructure` - this will need to be deleted after you are happy with the contract tests.
+  - Option 2 - If you want to deploy with Cloudformation:
+    - Run `cfn submit --dry-run` - it will generate a package locally in your source repository
+    - Upload it to a manually created S3 bucket.  Preferably the build bucket in the master account
+    - Run the template `test_deploy/2extension/aws_contract_tests/deploy_extension.yaml` to deploy the resource
+    - Create an S3 bucket manually for contract test results
+- Run the Contract Tests
+  - Example Command `aws cloudformation test-type --arn arn:aws:cloudformation:eu-west-2:688601398555:type/resource/Dotmatics-SSO-GroupInfo --type RESOURCE  --log-delivery-bucket cloudformationmanageduploadinfrast-artifactbucket-1ht2bc69x9z9j --region eu-west-2`
+  - Will run the contract tests in an ASYNC way.  Check S3 bucket for results.
+  - `--arn` parameter is the ARN of your registered extension
+  - `--log-delivery-bucket` is either from `CloudFormationManagedUploadInfrastructure` infrastructure stack if deployed with `cfn submit` or the manually created log bucket if created with cloudformation
 
 # Other Dev Resources
 - mypy - [https://mypy.readthedocs.io/en/stable/getting_started.html](https://mypy.readthedocs.io/en/stable/getting_started.html) 
