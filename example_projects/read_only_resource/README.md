@@ -1,5 +1,15 @@
 # Dotmatics::SSO::GroupInfo
 
+# List of Issues (Related to this Effort)
+- [Issue 1](https://github.com/aws-cloudformation/cloudformation-cli/issues/963) - Docs issue only
+- [Issue 2](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/245) - Resolved by doing our own custom [unit test](https://github.com/carpnick/cf_extention_core/blob/feature/dev3/example_projects/read_only_resource/tests/unit/test_handlers.py) and custom timeout implementation- [Link1](https://github.com/carpnick/cf_extention_core/blob/feature/dev3/src/cf_extension_core/base_handler.py#L62), [Link2](https://github.com/carpnick/cf_extention_core/blob/feature/dev3/src/cf_extension_core/base_handler.py#L261)
+- [Issue 3](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/246) - Resolved and released
+- [Issue 4](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/247) - Resolved by workaround described in this readme locally and only building on X86/AMD64 in AWS for Contract Tests
+- [Issue 5](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/248) - Not Resolved - Complex types in the future might be a problem
+- [Issue 6](https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249) - Resolved (attempted) by controlling [callback save/restore](https://github.com/carpnick/cf_extention_core/blob/feature/dev3/src/cf_extension_core/base_handler.py#L95-L110)
+- [Issue 7](https://github.com/aws/aws-lambda-builders/issues/185) - Resolved locally by adjusting `sam build` processes to work locally on ARM and AMD64/X86.  See this readme.
+- [Issue 8](https://github.com/aws-cloudformation/cloudformation-cli/pull/971) - Fixed by OSS Contribution
+
 # Development Tips
 - We are using type checking from mypy.  So to get boto3 stubs we pulled them in via [boto3-stubs](https://pypi.org/project/boto3-stubs/).  See `reqs_dev.txt`
   - To make it so stubs are only a development dependency, used syntax like the following at top of python files (for example dynamodb resource):
