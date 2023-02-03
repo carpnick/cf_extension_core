@@ -1,4 +1,5 @@
 import datetime as datetime
+import logging
 
 from cloudformation_cli_python_lib.identifier_utils import generate_resource_identifier
 import cloudformation_cli_python_lib.exceptions as exceptions
@@ -9,7 +10,15 @@ class CustomResourceHelpers:
     ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS = 60
     READ_LIST_HANDLER_TIMEOUT = 30
     STANDARD_SEPARATOR = "::"
-    HANDLER_ENTRY_TIME = None
+    HANDLER_ENTRY_TIME: Any = None
+
+    @staticmethod
+    def init_logging() -> None:
+        # Total hack but we need to know where the message is coming from
+        # There are alot of layers involved - lambda  / AWS Extensions Framework / cf_extenstion_core / extension native
+        fmt = logging.root.handlers[0].formatter._fmt.rstrip("\n") + " - %(pathname)s:%(funcName)s:%(lineno)d \n"
+        datefmt = logging.root.handlers[0].formatter.datefmt
+        logging.root.handlers[0].setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
 
     @staticmethod
     def generate_id_resource(
