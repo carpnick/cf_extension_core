@@ -16,9 +16,10 @@ class CustomResourceHelpers:
     def init_logging() -> None:
         # Total hack but we need to know where the message is coming from
         # There are alot of layers involved - lambda  / AWS Extensions Framework / cf_extenstion_core / extension native
-        fmt = logging.root.handlers[0].formatter._fmt.rstrip("\n") + " - %(pathname)s:%(funcName)s:%(lineno)d \n"
-        datefmt = logging.root.handlers[0].formatter.datefmt
-        logging.root.handlers[0].setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+        for handler in logging.root.handlers:
+            fmt = handler.formatter._fmt.rstrip("\n") + " - %(pathname)s:%(funcName)s:%(lineno)d \n"
+            datefmt = handler.formatter.datefmt
+            handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
 
     @staticmethod
     def generate_id_resource(
