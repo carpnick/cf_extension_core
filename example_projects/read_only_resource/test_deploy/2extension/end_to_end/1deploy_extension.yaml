@@ -4,7 +4,7 @@ Description: >
   This is also an example of how we would reference the cf_extensions bucket in every account
 Parameters:
 
-  CFExtensionBucket:
+  S3CFExtensionBucket:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /cloud/public/regional/s3/v1/buckets/cf_extensions/name
 
@@ -78,7 +78,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !GetAtt ExecutionRole.Arn #Required for all our private extensions
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/${S3Key}"
+      SchemaHandlerPackage: !Sub "s3://${S3CFExtensionBucket}/${S3Key}"
       LoggingConfig:
         LogGroupName: !Ref ExtensionLogGroup
         LogRoleArn: !GetAtt ExecutionRole.Arn
