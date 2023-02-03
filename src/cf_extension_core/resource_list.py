@@ -79,7 +79,7 @@ class ResourceList(ResourceBase):
 
                 # We failed hard so we should raise a different exception that the
                 raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
-                    "Broken in Custom resource - LIST, contact resource owner"
+                    "CR Broke - LIST - " + str(exception_value)
                 ) from exception_value
         finally:
             logger.info("DynamoList Exit Completed")

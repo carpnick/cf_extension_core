@@ -144,7 +144,7 @@ class ResourceCreate(_ResourceBase):
 
                 # We failed hard so we should raise a different exception that the
                 raise exceptions.HandlerInternalFailure(
-                    "Broken in Custom resource - " "CREATE, contact resource owner"
+                    "CR Broke - CREATE - " + str(exception_value)
                 ) from exception_value
         finally:
 

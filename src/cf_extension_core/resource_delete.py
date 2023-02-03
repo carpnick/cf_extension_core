@@ -95,7 +95,7 @@ class ResourceDelete(_ResourceBase):
 
                 # We failed hard so we should raise a different exception that the
                 raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
-                    "Broken in Custom resource - CREATE, contact resource owner"
+                    "CR Broke - DELETE - " + str(exception_value)
                 ) from exception_value
 
         finally:
