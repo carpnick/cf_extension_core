@@ -3,7 +3,7 @@ aws-encryption-sdk==3.1.0
 boto3==1.26.54
 botocore==1.29.54
 certifi==2022.12.7
-cf-extension-core==0.1.dev20230123192153
+cf-extension-core==0.1.dev20230203163254
 cffi==1.15.1
 charset-normalizer==3.0.1
 cloudformation-cli-python-lib==2.1.15
