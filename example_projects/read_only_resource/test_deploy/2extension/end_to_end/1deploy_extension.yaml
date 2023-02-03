@@ -8,51 +8,14 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /cloud/public/regional/s3/v1/buckets/cf_extensions/name
 
+  S3Key:
+    Type: "String"
+    Description: "Should be like NickTest/dotmatics-sso-groupinfo.zip"
+
 Resources:
 
+
   ExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      MaxSessionDuration: 3600
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - resources.cloudformation.amazonaws.com
-            Action: sts:AssumeRole
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-              StringLike:
-                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/*"
-      Path: "/"
-      Policies:
-        - PolicyName: ResourceTypePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                - "dynamodb:CreateTable"
-                - "dynamodb:DeleteItem"
-                - "dynamodb:DescribeTable"
-                - "dynamodb:GetItem"
-                - "dynamodb:PutItem"
-                - "dynamodb:UpdateItem"
-                - "dynamodb:UpdateTable"
-                - "identitystore:DescribeGroup"
-                - "identitystore:ListGroups"
-                Resource: "*"
-
-  #Logging
-  myLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 7
-
-  LogRole:
     Type: AWS::IAM::Role
     Properties:
       MaxSessionDuration: 3600
@@ -65,11 +28,28 @@ Resources:
             Action: sts:AssumeRole
             Condition:
               StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
+                aws:SourceAccount: !Sub "${AWS::AccountId}"
               StringLike:
-                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/*"
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/Dotmatics-*"
       Path: "/"
       Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:CreateTable"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:UpdateTable"
+                  - "identitystore:DescribeGroup"
+                  - "identitystore:ListGroups"
+                Resource: "*"
+
         - PolicyName: Logging
           PolicyDocument:
             Version: '2012-10-17'
@@ -84,6 +64,13 @@ Resources:
                    - "cloudwatch:PutMetricData"
                 Resource: "*"
 
+  #Logging
+  ExtensionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+
+
 
   #Register type to be used
   ResourceVersion:
@@ -91,10 +78,10 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !GetAtt ExecutionRole.Arn #Required for all our private extensions
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo2.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/${S3Key}"
       LoggingConfig:
-        LogGroupName: !Ref myLogGroup
-        LogRoleArn: !GetAtt LogRole.Arn
+        LogGroupName: !Ref ExtensionLogGroup
+        LogRoleArn: !GetAtt ExecutionRole.Arn
 
   #Guarantee latest = default
   ResourceDefaultVersion:

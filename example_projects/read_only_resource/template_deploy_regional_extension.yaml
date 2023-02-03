@@ -33,11 +33,9 @@ Resources:
             Action: sts:AssumeRole
             Condition:
               StringEquals:
-                aws:SourceAccount:
-                  Ref: AWS::AccountId
+                aws:SourceAccount: !Sub "${AWS::AccountId}"
               StringLike:
-                aws:SourceArn:
-                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/Dotmatics-SSO-GroupInfo/*
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/Dotmatics-*"
       Path: "/"
       Policies:
         - PolicyName: ResourceTypePolicy
@@ -71,12 +69,12 @@ Resources:
                    - "cloudwatch:PutMetricData"
                 Resource: "*"
 
-  SSMBucketName:
+  SSMRoleArn:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "${SSMPrefix}/public/regional/iam/v1/roles/cf_extensions/dotmatics_sso_groupinfo/arn"
       Type: String
-      Value: !Ref  CFExtensionBucket
+      Value: !GetAtt ExecutionRole.Arn
       Description: "Extension Execution Role ARN"
 
   #Logging
