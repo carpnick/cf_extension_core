@@ -31,7 +31,7 @@ def create_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
-    LOG.info("-"*80)
+    LOG.info("-" * 80)
     return CreateHandler(
         session=session,
         request=request,

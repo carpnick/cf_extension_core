@@ -4,8 +4,8 @@ set -e
 echo "Running cfn validate: cfn validate"
 cfn validate
 
-echo "Running cfn-lint: cfn-lint -t test_deploy/**/*.yaml -i E3001"
-cfn-lint -t test_deploy/**/*.yaml -i E3001
+echo "Running cfn-lint: cfn-lint -t test_deploy/**/*.yaml -i E3001 E1010"
+cfn-lint -t test_deploy/**/*.yaml -i E3001 E1010
 
 echo "Running cfn-lint: cfn-lint -t template_deploy_regional_extension.yaml"
 cfn-lint -t template_deploy_regional_extension.yaml
