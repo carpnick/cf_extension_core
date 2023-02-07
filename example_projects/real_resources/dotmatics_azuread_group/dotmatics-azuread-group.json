@@ -1,0 +1,125 @@
+{
+    "typeName": "Dotmatics::AzureAD::Group",
+    "description": "Creates Azure AD Groups",
+    "replacementStrategy": "delete_then_create",
+    "tagging": {
+        "taggable": false
+    },
+    "sourceUrl": "https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git",
+    "definitions": {
+    },
+    "properties": {
+        "GroupName": {
+            "description": "A name for the group",
+            "type": "string"
+        },
+        "GroupType": {
+            "description": "Either `SECURITY` or `Microsoft365`",
+            "type": "string"
+        },
+        "GroupId": {
+            "description": "The ID of the group",
+            "type": "string"
+        },
+        "GroupOwnerAppName": {
+            "description": "The Name of the application that will own the group",
+            "type": "string"
+        },
+
+        "CredentialAppClientId": {
+            "description": "The Client(app)-ID of the client used the authenticate to the app",
+            "type": "string"
+        },
+        "CredentialAppAPIToken": {
+            "description": "Secret of the `CredentialAppClientId` App (API)",
+            "type": "string"
+        },
+        "CredentialTenantId": {
+            "description": "The GUID of the Office 365 Tenant that the `CredentialAppClientId` is in ",
+            "type": "string"
+        },
+
+        "GeneratedId": {
+            "description": "The generated read-only identifier.",
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "GroupName",
+        "GroupType",
+        "GroupOwnerAppName",
+        "CredentialAppClientId",
+        "CredentialAppAPIToken",
+        "CredentialTenantId"
+
+    ],
+    "readOnlyProperties": [
+        "/properties/GroupId",
+        "/properties/GeneratedId"
+    ],
+    "createOnlyProperties": [
+        "/properties/GroupName",
+        "/properties/GroupType",
+        "/properties/GroupOwnerAppName",
+        "/properties/CredentialTenantId"
+    ],
+    "writeOnlyProperties": [
+        "/properties/CredentialAppClientId",
+        "/properties/CredentialAppAPIToken",
+        "/properties/CredentialTenantId"
+    ],
+    "primaryIdentifier": [
+        "/properties/GeneratedId"
+    ],
+    "handlers": {
+        "create": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 5
+        },
+        "update": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "read": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "delete": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 5
+        }
+    }
+}

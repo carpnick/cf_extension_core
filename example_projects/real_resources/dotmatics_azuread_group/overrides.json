@@ -1,0 +1,17 @@
+{
+  "CREATE": {
+    "/GroupName": "TestGroup1",
+    "/GroupType": "SECURITY",
+    "/GroupOwnerAppName": "Test",
+    "/CredentialAppClientId": "xxxxxxx",
+    "/CredentialAppAPIToken": "xxxxxxx",
+    "/CredentialTenantId": "xxxxxxx"
+  },
+  "UPDATE": {
+    "/GroupName": "TestGroup1",
+    "/GroupType": "SECURITY",
+    "/GroupOwnerAppName": "Test",
+    "/CredentialAppClientId": "xxxxxxx",
+    "/CredentialAppAPIToken": "xxxxxxx"
+  }
+}
