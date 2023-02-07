@@ -31,6 +31,7 @@ def create_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
+    LOG.info("-"*80)
     return CreateHandler(
         session=session,
         request=request,
@@ -47,6 +48,7 @@ def update_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
+    LOG.info("-" * 80)
     return UpdateHandler(
         session=session,
         request=request,
@@ -63,6 +65,7 @@ def delete_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
+    LOG.info("-" * 80)
     return DeleteHandler(
         session=session,
         request=request,
@@ -79,6 +82,7 @@ def read_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
+    LOG.info("-" * 80)
     return ReadHandler(
         session=session,
         request=request,
