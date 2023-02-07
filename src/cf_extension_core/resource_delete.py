@@ -43,7 +43,8 @@ class ResourceDelete(_ResourceBase):
             primary_identifier=primary_identifier,
             type_name=type_name,
         )
-        pass
+
+        self._set_delete = False
 
     def read_model(
         self,
@@ -54,6 +55,9 @@ class ResourceDelete(_ResourceBase):
             raise Exception("Primary Identifier cannot be Null")
 
         return self._db_item_get_model(model_type=model_type)
+
+    def set_resource_deleted(self) -> None:
+        self._set_delete = True
 
     def __enter__(self) -> "ResourceDelete":
         logger.info("DynamoDelete Enter... ")
@@ -78,7 +82,10 @@ class ResourceDelete(_ResourceBase):
             if exception_type is None:
                 logger.info("Has Failure = False")
 
-                self._db_item_delete()
+                # If was explicitly told it was deleted...
+                # Sometimes we need to stabilize during deletion
+                if self._set_delete:
+                    self._db_item_delete()
 
                 return False
 
