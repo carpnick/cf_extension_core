@@ -43,7 +43,6 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
         )
 
     def execute(self) -> ProgressEvent:
-
         desired_state = self.request.desiredResourceState
         assert desired_state is not None
 
