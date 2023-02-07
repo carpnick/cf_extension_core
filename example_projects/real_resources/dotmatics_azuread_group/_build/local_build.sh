@@ -34,7 +34,7 @@ black -l 120 --check --extend-exclude ".*models\.py" src/ tests/
 
 
 echo "\nRunning flake8: flake8 --max-line-length 120 --per-file-ignores='src/**/models.py:F401,W391' src/ tests/"
-#flake8 --max-line-length 120 --per-file-ignores='src/**/models.py:F401,W391' src/ tests/
+flake8 --max-line-length 120 --per-file-ignores='src/**/models.py:F401,W391' src/ tests/
 
 echo "\n Running cfn submit for build verification: cfn submit --dry-run"
 cfn submit --dry-run

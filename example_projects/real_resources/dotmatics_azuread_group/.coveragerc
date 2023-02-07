@@ -4,7 +4,7 @@ source =
     src/
 
 [report]
-fail_under = 30
+fail_under = 86
 omit =
     src/*/models.py
 

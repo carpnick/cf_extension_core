@@ -1,19 +1,11 @@
 from dotmatics_azuread_group.common import Common
-from dotmatics_azuread_group.handlers import TYPE_NAME
-from pytest_mock import MockFixture
-from cloudformation_cli_python_lib import exceptions
+from .test_data import standard_create_request, APP_CLIENT_ID, APP_CLIENT_API_TOKEN, TENANT_ID
 
 
-def test_find_group_id_success(mocker: MockFixture) -> None:
-    s = mocker.MagicMock()
-    assert s is not None
+def test_generate_api_client() -> None:
+    s = standard_create_request()
 
-
-def test_find_group_id_too_many_groups(mocker: MockFixture) -> None:
-    s = mocker.MagicMock()
-    assert s is not None
-
-
-def test_find_group_id_no_groups(mocker: MockFixture) -> None:
-    s = mocker.MagicMock()
-    assert s is not None
+    api_client = Common.generate_api_client(s.desiredResourceState)
+    assert api_client.groups.config.client_id == APP_CLIENT_ID
+    assert api_client.groups.config.client_secret == APP_CLIENT_API_TOKEN
+    assert api_client.groups.config.tenant_id == TENANT_ID

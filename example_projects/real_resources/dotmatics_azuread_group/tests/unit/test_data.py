@@ -11,7 +11,7 @@ def standard_create_resource_model() -> ResourceModel:
     return ResourceModel(
         GroupName=GROUP_NAME,
         GroupOwnerAppName=GROUP_OWNER_NAME,
-        GroupType="",
+        GroupType="SECURITY",
         CredentialAppClientId=APP_CLIENT_ID,
         CredentialAppAPIToken=APP_CLIENT_API_TOKEN,
         CredentialTenantId=TENANT_ID,

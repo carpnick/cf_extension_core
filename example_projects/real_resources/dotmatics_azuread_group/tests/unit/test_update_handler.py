@@ -1,7 +1,3 @@
-from typing import MutableMapping, Any
-
-from dotmatics_azuread_group.update_handler import UpdateHandler
-from dotmatics_azuread_group.handlers import TYPE_NAME
 from pytest_mock import MockFixture
 
 
