@@ -6,5 +6,15 @@ Resources:
   SampleEvent:
     Type: Dotmatics::AzureAD::Group
     Properties:
-      GroupName: "AWSAccountFactory"
-      IdentityStoreId: "d-9c67127909"
+      GroupName: TestGroup2
+      GroupType: SECURITY
+      GroupOwnerAppName: Test
+      CredentialAppClientId: "xxxxxxxxx"
+      CredentialAppAPIToken: "xxxxxxxxx"
+      CredentialTenantId:    "xxxxxxxx"
+
+Outputs:
+  GroupID:
+    Value: !GetAtt SampleEvent.GroupId
+  GeneratedId:
+    Value: !GetAtt SampleEvent.GeneratedId

@@ -7,10 +7,14 @@ Parameters:
   RoleArn:
     Type: String
 
-
   CFExtensionBucket:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /cloud/public/regional/s3/v1/buckets/cf_extensions/name
+
+  S3Key:
+    Type: "String"
+    Description: "Should be like NickTest/dotmatics-sso-groupinfo.zip"
+
 
 Resources:
 
@@ -20,7 +24,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::AzureAD::Group
       ExecutionRoleArn: !Ref RoleArn
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/${S3Key}"
 
   #Guarantee latest = default
   ResourceDefaultVersion:
