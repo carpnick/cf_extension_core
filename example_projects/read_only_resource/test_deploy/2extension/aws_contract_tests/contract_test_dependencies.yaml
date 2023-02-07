@@ -33,6 +33,7 @@ Resources:
                 - "dynamodb:PutItem"
                 - "dynamodb:UpdateItem"
                 - "dynamodb:UpdateTable"
+
                 - "identitystore:DescribeGroup"
                 - "identitystore:ListGroups"
                 Resource: "*"

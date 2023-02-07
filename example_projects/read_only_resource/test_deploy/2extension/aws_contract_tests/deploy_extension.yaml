@@ -12,6 +12,10 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /cloud/public/regional/s3/v1/buckets/cf_extensions/name
 
+  S3Key:
+    Type: "String"
+    Description: "Should be like NickTest/dotmatics-sso-groupinfo.zip"
+
 Resources:
 
   #Register type to be used
@@ -20,7 +24,7 @@ Resources:
     Properties:
       TypeName: Dotmatics::SSO::GroupInfo
       ExecutionRoleArn: !Ref RoleArn
-      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/NickTest/dotmatics-sso-groupinfo.zip"
+      SchemaHandlerPackage: !Sub "s3://${CFExtensionBucket}/${S3Key}"
 
   #Guarantee latest = default
   ResourceDefaultVersion:
