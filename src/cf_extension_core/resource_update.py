@@ -57,6 +57,16 @@ class ResourceUpdate(_ResourceBase):
         self._updated_model: Optional[BaseModel] = None
         self._was_model_updated = False
 
+    def read_model(
+        self,
+        model_type: Type[_ResourceBase.T],
+    ) -> _ResourceBase.T:
+
+        if self._primary_identifier is None:
+            raise Exception("Primary Identifier cannot be Null")
+
+        return self._db_item_get_model(model_type=model_type)
+
     def update_model(
         self,
         updated_model: _ResourceBase.T,
