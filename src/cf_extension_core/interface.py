@@ -102,8 +102,8 @@ def initialize_handler(
         callback_context=callback_context,
         total_allowed_time_in_minutes=total_allowed_time_in_minutes,
     )
-    CustomResourceHelpers._callback_add_handler_entry_time()
-    CustomResourceHelpers._return_failure_due_to_timeout(callback_context)
+    CustomResourceHelpers._callback_add_handler_entry_time(callback_context=callback_context)
+    CustomResourceHelpers._return_failure_due_to_timeout(callback_context=callback_context)
 
     LOG.debug("End initialize_handler")
 

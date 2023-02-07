@@ -131,7 +131,9 @@ class BaseHandler(Generic[T, K]):
         Determines if the handler is timing out in its current execution environment.
         :return:
         """
-        return CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout()
+        return CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(
+            callback_context=self.callback_context
+        )
 
     def create_resource(self) -> ResourceCreate:
         """

@@ -33,8 +33,6 @@ Resources:
                 - "dynamodb:PutItem"
                 - "dynamodb:UpdateItem"
                 - "dynamodb:UpdateTable"
-                - "identitystore:DescribeGroup"
-                - "identitystore:ListGroups"
                 Resource: "*"
 
               # Specific to contract Tests

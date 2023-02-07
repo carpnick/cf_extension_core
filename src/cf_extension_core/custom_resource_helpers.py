@@ -5,12 +5,13 @@ from cloudformation_cli_python_lib.identifier_utils import generate_resource_ide
 import cloudformation_cli_python_lib.exceptions as exceptions
 from typing import Any, MutableMapping, Optional
 
+logger = logging.getLogger(__name__)
+
 
 class CustomResourceHelpers:
     ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS = 60
     READ_LIST_HANDLER_TIMEOUT = 30
     STANDARD_SEPARATOR = "::"
-    HANDLER_ENTRY_TIME: Any = None
 
     @staticmethod
     def init_logging() -> None:
@@ -200,10 +201,8 @@ class CustomResourceHelpers:
         return primary_name
 
     @staticmethod
-    def _callback_add_handler_entry_time() -> None:
-        # local variable only
-        if CustomResourceHelpers.HANDLER_ENTRY_TIME is None:
-            CustomResourceHelpers.HANDLER_ENTRY_TIME = datetime.datetime.utcnow()
+    def _callback_add_handler_entry_time(callback_context: MutableMapping[str, Any]) -> None:
+        callback_context["handler_entry_time"] = datetime.datetime.utcnow().isoformat()
 
     @staticmethod
     def _callback_add_resource_end_time(
@@ -217,21 +216,30 @@ class CustomResourceHelpers:
             ).isoformat()
 
     @staticmethod
-    def should_return_in_progress_due_to_handler_timeout() -> bool:
-        if CustomResourceHelpers.HANDLER_ENTRY_TIME is None:
-            raise exceptions.InternalFailure("HANDLER_ENTRY_TIME not set properly")
+    def should_return_in_progress_due_to_handler_timeout(callback_context: MutableMapping[str, Any]) -> bool:
+        if "handler_entry_time" not in callback_context:
+            raise exceptions.InternalFailure("handler_entry_time not set properly in callback_context")
         else:
 
             # If handler entry time + Max return time (60)
             # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
             # Return before CF kills us.
+
+            assert isinstance(callback_context["handler_entry_time"], str)
+
+            entry_time = datetime.datetime.fromisoformat(callback_context["handler_entry_time"])
+
             compare_time = (
-                CustomResourceHelpers.HANDLER_ENTRY_TIME
+                entry_time
                 + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
                 - datetime.timedelta(seconds=10)
             )
 
             cur_time = datetime.datetime.utcnow()
+
+            logger.info("Entry Time: " + entry_time.isoformat())
+            logger.info("Current Time: " + cur_time.isoformat())
+            logger.info("Compare Time: " + compare_time.isoformat())
 
             if cur_time > compare_time:
                 return True
@@ -246,6 +254,7 @@ class CustomResourceHelpers:
             raise exceptions.InternalFailure("resource_entry_end_time not set in callback state")
         else:
             # If calculated end time is less than now - we should be timing out with an exception.
+            assert isinstance(callback_context["resource_entry_end_time"], str)
             orig_time = datetime.datetime.fromisoformat(callback_context["resource_entry_end_time"])
             if orig_time < datetime.datetime.utcnow():
                 # If resource end time is greater than now we need to return failure due to timeout

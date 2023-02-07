@@ -53,12 +53,16 @@ def test_gen_identifier_with_null_stack_id_and_logical_id() -> None:
 
 def test_non_timeout_handler() -> None:
     # No time has happened between so should not be timed out.
-    lib.CustomResourceHelpers._callback_add_handler_entry_time()
-    assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout() is False
+    callback_context: MutableMapping[str, Any] = {}
+    lib.CustomResourceHelpers._callback_add_handler_entry_time(callback_context)
+    assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback_context) is False
 
 
 def test_timeout_handler_with_timeout(mocker: MockerFixture) -> None:
-    lib.CustomResourceHelpers._callback_add_handler_entry_time()
+    callback_context: MutableMapping[str, Any] = {}
+    lib.CustomResourceHelpers._callback_add_handler_entry_time(callback_context)
+
+    curr_hand_entry_time = datetime.datetime.fromisoformat(callback_context["handler_entry_time"])
 
     # Adding the full 60 + 5 is defintely after time and it should return  - aka True
     target_val = datetime.datetime.utcnow() + datetime.timedelta(
@@ -66,14 +70,16 @@ def test_timeout_handler_with_timeout(mocker: MockerFixture) -> None:
     )
 
     with mocker.mock_module.patch("datetime.datetime") as m:
+        m.fromisoformat.return_value = curr_hand_entry_time
         m.utcnow.return_value = target_val
-        assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout() is True
+        assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback_context) is True
 
     # Adding just 5 seconds is not late enough - so it should continue running - return False
     target_val2 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
     with mocker.mock_module.patch("datetime.datetime") as m:
+        m.fromisoformat.return_value = curr_hand_entry_time
         m.utcnow.return_value = target_val2
-        assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout() is False
+        assert lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback_context) is False
 
 
 def test_handler_end_time_timeout(mocker: MockerFixture) -> None:
@@ -125,7 +131,8 @@ def test_handler_entry_time_added_for_should_return_in_progress_due_to_handler_t
 ) -> None:
 
     try:
-        lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout()
+        callback_context: MutableMapping[str, Any] = {}
+        lib.CustomResourceHelpers.should_return_in_progress_due_to_handler_timeout(callback_context)
         assert False
     except Exception:
         assert True
