@@ -1,0 +1,123 @@
+{
+    "typeName": "Dotmatics::AzureAD::GroupAssignment",
+    "description": "Assigns an Azure AD Group to an Application",
+    "replacementStrategy": "create_then_delete",
+    "tagging": {
+        "taggable": false
+    },
+    "sourceUrl": "https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git",
+    "definitions": {
+    },
+    "properties": {
+        "GroupId": {
+            "description": "Azure AD Group Id",
+            "type": "string"
+        },
+        "AppName": {
+            "description": "The Application the group should be assigned to",
+            "type": "string"
+        },
+        "AppRoleName": {
+            "description": "The Application role the group should be assigned to.  Defaults to `User`",
+            "type": "string",
+            "default": "User"
+        },
+        "AssignmentId": {
+            "description": "The Assignment ID for when the group gets assigned to the Application.",
+            "type": "string"
+        },
+        "GeneratedId": {
+            "description": "The generated read-only identifier.",
+            "type": "string"
+        },
+
+        "CredentialAppClientId": {
+            "description": "The Client(app)-ID of the client used the authenticate to the app",
+            "type": "string"
+        },
+        "CredentialAppAPIToken": {
+            "description": "Secret of the `CredentialAppClientId` App (API)",
+            "type": "string"
+        },
+        "CredentialTenantId": {
+            "description": "The GUID of the Office 365 Tenant that the `CredentialAppClientId` is in ",
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "GroupId",
+        "AppName",
+        "CredentialAppClientId",
+        "CredentialAppAPIToken",
+        "CredentialTenantId"
+    ],
+    "readOnlyProperties": [
+        "/properties/AssignmentId",
+        "/properties/GeneratedId"
+    ],
+    "writeOnlyProperties": [
+        "/properties/CredentialAppClientId",
+        "/properties/CredentialAppAPIToken",
+        "/properties/CredentialTenantId"
+    ],
+    "createOnlyProperties": [
+        "/properties/GroupId",
+        "/properties/AppName",
+        "/properties/AppRoleName",
+        "/properties/CredentialTenantId"
+    ],
+    "primaryIdentifier": [
+        "/properties/GeneratedId"
+    ],
+    "handlers": {
+        "create": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "update": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "read": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "delete": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        }
+    }
+}

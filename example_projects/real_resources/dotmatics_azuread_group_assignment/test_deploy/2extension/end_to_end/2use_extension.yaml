@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Try Using Extension
+Resources:
+
+  SampleEvent:
+    Type: Dotmatics::AzureAD::GroupAssignment
+    Properties:
+      GroupName: "AWSAccountFactory"
+      IdentityStoreId: "d-9c67127909"
+
+Outputs:
+  GroupID:
+    Value: !GetAtt SampleEvent.GroupId
+  GeneratedId:
+    Value: !GetAtt SampleEvent.GeneratedId
