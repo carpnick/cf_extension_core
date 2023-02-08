@@ -1,6 +1,6 @@
 # Dotmatics::AzureAD::Group
 
-Creates Azure AD Groups
+Creates an Azure AD Group
 
 ## Syntax
 
