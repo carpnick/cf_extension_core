@@ -23,7 +23,7 @@ def test_read_success(mocker: MockFixture) -> None:
     # Parameters
     r = standard_create_request()
     assert r.desiredResourceState is not None  # Mypy
-    r.desiredResourceState.GeneratedReadOnlyId = "1"
+    r.desiredResourceState.GeneratedId = "1"
 
     callback_context: MutableMapping[str, Any] = {}
     type_name = TYPE_NAME
@@ -57,7 +57,7 @@ def test_read_success(mocker: MockFixture) -> None:
         assert model.GroupId == "1"
         assert model.GroupName == r.desiredResourceState.GroupName
         assert model.IdentityStoreId == r.desiredResourceState.IdentityStoreId
-        assert model.GeneratedReadOnlyId == "1"
+        assert model.GeneratedId == "1"
 
     # read_resource code was called and setting the model in the db tier was called
     db_context.__enter__.assert_called_once()

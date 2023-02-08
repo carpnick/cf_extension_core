@@ -5,9 +5,7 @@ GROUP_NAME = "Test Group"
 
 
 def standard_create_resource_model() -> ResourceModel:
-    return ResourceModel(
-        GroupName=GROUP_NAME, IdentityStoreId=GROUP_IDENTITY_STORE_ID, GroupId=None, GeneratedReadOnlyId=None
-    )
+    return ResourceModel(GroupName=GROUP_NAME, IdentityStoreId=GROUP_IDENTITY_STORE_ID, GroupId=None, GeneratedId=None)
 
 
 def standard_update_request() -> ResourceHandlerRequest:
@@ -17,8 +15,8 @@ def standard_update_request() -> ResourceHandlerRequest:
     previous = standard_create_resource_model()
     previous.GroupName = "Previous Group"
 
-    desired.GeneratedReadOnlyId = gen_id
-    previous.GeneratedReadOnlyId = gen_id
+    desired.GeneratedId = gen_id
+    previous.GeneratedId = gen_id
 
     return ResourceHandlerRequest(
         clientRequestToken="sss",

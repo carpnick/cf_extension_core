@@ -44,7 +44,7 @@ class ResourceModel(BaseModel):
     GroupName: Optional[str]
     IdentityStoreId: Optional[str]
     GroupId: Optional[str]
-    GeneratedReadOnlyId: Optional[str]
+    GeneratedId: Optional[str]
 
     @classmethod
     def _deserialize(
@@ -59,7 +59,7 @@ class ResourceModel(BaseModel):
             GroupName=json_data.get("GroupName"),
             IdentityStoreId=json_data.get("IdentityStoreId"),
             GroupId=json_data.get("GroupId"),
-            GeneratedReadOnlyId=json_data.get("GeneratedReadOnlyId"),
+            GeneratedId=json_data.get("GeneratedId"),
         )
 
 

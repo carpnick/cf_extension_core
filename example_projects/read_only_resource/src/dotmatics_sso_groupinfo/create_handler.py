@@ -56,9 +56,9 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             saved_model = self.get_model_from_callback()
 
             # Update DB tier
-            assert saved_model.GeneratedReadOnlyId is not None
+            assert saved_model.GeneratedId is not None
             DB.set_resource_created(
-                primary_identifier=saved_model.GeneratedReadOnlyId,
+                primary_identifier=saved_model.GeneratedId,
                 current_model=self.get_model_from_callback(),
             )
 
@@ -96,7 +96,7 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             GroupName=model.GroupName,
             IdentityStoreId=model.IdentityStoreId,
             GroupId=Common.find_group_id(session=self.session, model=model, type_name=self.type_name),
-            GeneratedReadOnlyId=generated_ro_id,
+            GeneratedId=generated_ro_id,
         )
 
         self.save_model_to_callback(new_model)

@@ -46,7 +46,7 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
 
         # Validates a row exists - otherwise fail out with a NotFound
         assert self.request.desiredResourceState is not None
-        identifier = self.validate_identifier(self.request.desiredResourceState.GeneratedReadOnlyId)
+        identifier = self.validate_identifier(self.request.desiredResourceState.GeneratedId)
         with self.read_resource(primary_identifier=identifier) as DB:
 
             # No guarantee of parameters from input request - AWS Contract -
@@ -58,7 +58,7 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
                 GroupName=s.GroupName,
                 IdentityStoreId=s.IdentityStoreId,
                 GroupId=Common.find_group_id(session=self.session, model=s, type_name=self.type_name),
-                GeneratedReadOnlyId=identifier,
+                GeneratedId=identifier,
             )
 
             # Update data tier (in case it has changed)

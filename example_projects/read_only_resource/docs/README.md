@@ -55,7 +55,7 @@ _Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormati
 
 ### Ref
 
-When you pass the logical ID of this resource to the intrinsic `Ref` function, Ref returns the GeneratedReadOnlyId.
+When you pass the logical ID of this resource to the intrinsic `Ref` function, Ref returns the GeneratedId.
 
 ### Fn::GetAtt
 
@@ -67,7 +67,7 @@ For more information about using the `Fn::GetAtt` intrinsic function, see [Fn::G
 
 The GroupId found based on the GroupName.
 
-#### GeneratedReadOnlyId
+#### GeneratedId
 
 The generated read-only identifier.
 

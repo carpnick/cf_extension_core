@@ -91,7 +91,7 @@ def test_create_success(mocker: MockFixture) -> None:
     assert ch.request.desiredResourceState.GroupId == r.desiredResourceState.GroupId
     assert ch.request.desiredResourceState.GroupName == r.desiredResourceState.GroupName
     assert ch.request.desiredResourceState.IdentityStoreId == r.desiredResourceState.IdentityStoreId
-    assert ch.request.desiredResourceState.GeneratedReadOnlyId is not None  # Has been set by Create
+    assert ch.request.desiredResourceState.GeneratedId is not None  # Has been set by Create
 
     # create_resource code was called and setting the model in the db tier was called
     db_context.__enter__.assert_called_once()

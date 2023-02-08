@@ -23,7 +23,7 @@
             "type": "string",
             "pattern": "^([0-9a-f]{10}-|)[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$"
         },
-        "GeneratedReadOnlyId": {
+        "GeneratedId": {
             "description": "The generated read-only identifier.",
             "type": "string"
         }
@@ -35,10 +35,10 @@
     ],
     "readOnlyProperties": [
         "/properties/GroupId",
-        "/properties/GeneratedReadOnlyId"
+        "/properties/GeneratedId"
     ],
     "primaryIdentifier": [
-        "/properties/GeneratedReadOnlyId"
+        "/properties/GeneratedId"
     ],
     "handlers": {
         "create": {

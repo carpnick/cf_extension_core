@@ -45,7 +45,7 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
 
     def get_primary_identifier(self, model: Optional[ResourceModel]) -> str:
         assert model is not None
-        return self.validate_identifier(model.GeneratedReadOnlyId)
+        return self.validate_identifier(model.GeneratedId)
 
     def execute(self) -> ProgressEvent:
 
@@ -80,7 +80,7 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             GroupName=model.GroupName,
             IdentityStoreId=model.IdentityStoreId,
             GroupId=Common.find_group_id(session=self.session, model=model, type_name=self.type_name),
-            GeneratedReadOnlyId=self.get_primary_identifier(self.request.previousResourceState),
+            GeneratedId=self.get_primary_identifier(self.request.previousResourceState),
         )
 
         self.save_model_to_callback(new_model)
