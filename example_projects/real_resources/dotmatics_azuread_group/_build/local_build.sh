@@ -12,14 +12,14 @@ cfn-lint -t template_deploy_regional_extension.yaml
 
 echo "Running cfn generate: cfn generate.  Also determining if files are out of date in git"
 cfn generate
-#set +e
-#git diff --compact-summary --exit-code
-#if [ $? -ne 0  ]; then
-#  echo "---"
-#  echo "'cfn generate' generated some changes. Run it locally and commit changes."
-#  exit 1
-#fi
-#set -e
+set +e
+git diff --compact-summary --exit-code
+if [ $? -ne 0  ]; then
+  echo "---"
+  echo "'cfn generate' generated some changes. Run it locally and commit changes."
+  exit 1
+fi
+set -e
 
 
 
