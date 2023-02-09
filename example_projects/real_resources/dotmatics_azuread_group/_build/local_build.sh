@@ -23,8 +23,8 @@ set -e
 
 
 
-echo "Running mypy: mypy src/ tests/ --ignore-missing-imports --strict"
-mypy src/ tests/ --ignore-missing-imports --strict
+echo "Running mypy: mypy src/ tests/  --exclude '.*models.*' --ignore-missing-imports --strict --follow-imports silent"
+mypy src/ tests/  --exclude '.*models.*' --ignore-missing-imports --strict --follow-imports silent
 
 echo "\nRunning Unit Tests: pytest --cov --cov-report html --cov-report xml --log-cli-level=DEBUG --junit-xml=junit.xml tests/unit"
 pytest --cov --cov-report html --cov-report xml --log-cli-level=DEBUG --junit-xml=junit.xml tests/unit

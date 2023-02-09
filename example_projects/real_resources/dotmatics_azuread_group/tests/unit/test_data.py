@@ -1,23 +1,30 @@
-from dotmatics_azuread_group.models import ResourceModel, ResourceHandlerRequest
+# import typing
+
+from dotmatics_azuread_group.models import ResourceModel, ResourceHandlerRequest  # , Owner
 
 GROUP_NAME = "Test Group"
 GROUP_OWNER_NAME = "APP 123"
 APP_CLIENT_ID = "123"
 APP_CLIENT_API_TOKEN = "token"
 TENANT_ID = "123432432"
+GROUP_DESCRIPTION = "GROUP DESCRIPTION"
 
 
 def standard_create_resource_model() -> ResourceModel:
-    return ResourceModel(
-        GroupName=GROUP_NAME,
-        GroupOwnerAppName=GROUP_OWNER_NAME,
-        GroupType="SECURITY",
-        CredentialAppClientId=APP_CLIENT_ID,
-        CredentialAppAPIToken=APP_CLIENT_API_TOKEN,
-        CredentialTenantId=TENANT_ID,
-        GeneratedId=None,
-        GroupId=None,
+    s = ResourceModel._deserialize(
+        json_data={
+            "GroupName": GROUP_NAME,
+            "Owners": [{"OwnerType": "USER", "Name": GROUP_OWNER_NAME}],
+            "GroupType": "SECURITY",
+            "CredentialAppClientId": APP_CLIENT_ID,
+            "CredentialAppAPIToken": APP_CLIENT_API_TOKEN,
+            "CredentialTenantId": TENANT_ID,
+            "GroupDescription": GROUP_DESCRIPTION,
+        }
     )
+
+    assert s is not None
+    return s
 
 
 def standard_update_request() -> ResourceHandlerRequest:

@@ -1,6 +1,7 @@
 import logging
 from typing import Optional, MutableMapping, Any, TYPE_CHECKING
 
+from ms_graph_client import Generator
 from ms_graph_client.services.groups import Groups
 from cloudformation_cli_python_lib.interface import ProgressEvent
 from cloudformation_cli_python_lib.boto3_proxy import SessionProxy
@@ -90,15 +91,24 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
 
             desired_state = self.request.desiredResourceState
             assert desired_state is not None
-            assert desired_state.GroupOwnerAppName is not None
+            assert desired_state.Owners is not None
             assert desired_state.GroupName is not None
             assert desired_state.GroupType is not None
+            assert desired_state.GroupDescription is not None
 
-            myapp_resp = self.api_client.applications.get_by_application_name(app_name=desired_state.GroupOwnerAppName)
-            owner_app_id = myapp_resp["appId"]
-            myapp_sp = self.api_client.applications.get_service_principal_by_app_id(owner_app_id)
-            owner_sp_id = myapp_sp["id"]
-            owner_url = self.api_client.applications.config.api_url + "/servicePrincipals/" + owner_sp_id
+            owners_array = []
+            gen = Generator(self.api_client.groups.config)
+
+            for item in desired_state.Owners:
+                assert item.Name is not None
+                assert item.OwnerType is not None
+
+                if item.OwnerType == "USER":
+                    LOG.info("Finding User: " + item.Name)
+                    user_id = self.api_client.users.get_user(upn=item.Name)["id"]
+                    owners_array.append(gen.user_url(user_obj_id=user_id))
+                else:
+                    raise NotImplementedError("Cannot support Owner type: " + str(item.OwnerType))
 
             group_type = Groups.GroupType(desired_state.GroupType)
 
@@ -106,8 +116,9 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             group_id = self.api_client.groups.create(
                 group_name=desired_state.GroupName,
                 group_type=group_type,
-                owners=[owner_url],
+                owners=owners_array,
                 with_stabilization=False,
+                group_description=desired_state.GroupDescription,
             )
             LOG.info("Group created Successfully")
 

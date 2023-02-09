@@ -40,7 +40,12 @@ def test_read_success(mocker: MockFixture) -> None:
 
     # Final Mocks
     groups_client.get_by_object_id = mocker.MagicMock(
-        return_value={"displayName": r.desiredResourceState.GroupName, "groupTypes": [], "id": "gid"}
+        return_value={
+            "displayName": r.desiredResourceState.GroupName,
+            "description": r.desiredResourceState.GroupDescription,
+            "groupTypes": [],
+            "id": "gid",
+        }
     )
     db_ops.read_model = mocker.MagicMock(return_value=r.desiredResourceState)
 

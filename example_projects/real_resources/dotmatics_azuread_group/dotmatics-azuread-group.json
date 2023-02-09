@@ -7,6 +7,28 @@
     },
     "sourceUrl": "https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git",
     "definitions": {
+        "Owner": {
+          "description": "An owner of a Group.",
+          "type": "object",
+          "properties": {
+            "OwnerType": {
+              "type": "string",
+              "description": "The type of owner.",
+              "enum": [
+                  "USER"
+              ]
+            },
+            "Name": {
+              "type": "string",
+              "description": "The `User principal name` of the User."
+            }
+          },
+          "required": [
+            "OwnerType",
+            "Name"
+          ],
+          "additionalProperties": false
+        }
     },
     "properties": {
         "GroupName": {
@@ -14,16 +36,32 @@
             "type": "string"
         },
         "GroupType": {
-            "description": "Either `SECURITY` or `Microsoft365`",
-            "type": "string"
+            "description": "Type of group to create",
+            "type": "string",
+            "enum": [
+                "SECURITY",
+                "Microsoft365"
+            ]
+        },
+        "GroupDescription": {
+            "description": "Description of the group",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+
         },
         "GroupId": {
             "description": "The ID of the group",
             "type": "string"
         },
-        "GroupOwnerAppName": {
-            "description": "The Name of the application that will own the group",
-            "type": "string"
+        "Owners": {
+            "description": "The Owners of the group",
+            "type": "array",
+            "uniqueItems": true,
+            "insertionOrder": true,
+            "items": {
+                "$ref": "#/definitions/Owner"
+            }
         },
 
         "CredentialAppClientId": {
@@ -48,10 +86,11 @@
     "required": [
         "GroupName",
         "GroupType",
-        "GroupOwnerAppName",
+        "Owners",
         "CredentialAppClientId",
         "CredentialAppAPIToken",
-        "CredentialTenantId"
+        "CredentialTenantId",
+        "GroupDescription"
 
     ],
     "readOnlyProperties": [
@@ -61,7 +100,6 @@
     "createOnlyProperties": [
         "/properties/GroupName",
         "/properties/GroupType",
-        "/properties/GroupOwnerAppName",
         "/properties/CredentialTenantId"
     ],
     "writeOnlyProperties": [

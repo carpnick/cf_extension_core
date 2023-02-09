@@ -14,7 +14,8 @@ To declare this entity in your AWS CloudFormation template, use the following sy
     "Properties" : {
         "<a href="#groupname" title="GroupName">GroupName</a>" : <i>String</i>,
         "<a href="#grouptype" title="GroupType">GroupType</a>" : <i>String</i>,
-        "<a href="#groupownerappname" title="GroupOwnerAppName">GroupOwnerAppName</a>" : <i>String</i>,
+        "<a href="#groupdescription" title="GroupDescription">GroupDescription</a>" : <i>String</i>,
+        "<a href="#owners" title="Owners">Owners</a>" : <i>[ <a href="owner.md">Owner</a>, ... ]</i>,
         "<a href="#credentialappclientid" title="CredentialAppClientId">CredentialAppClientId</a>" : <i>String</i>,
         "<a href="#credentialappapitoken" title="CredentialAppAPIToken">CredentialAppAPIToken</a>" : <i>String</i>,
         "<a href="#credentialtenantid" title="CredentialTenantId">CredentialTenantId</a>" : <i>String</i>,
@@ -29,7 +30,9 @@ Type: Dotmatics::AzureAD::Group
 Properties:
     <a href="#groupname" title="GroupName">GroupName</a>: <i>String</i>
     <a href="#grouptype" title="GroupType">GroupType</a>: <i>String</i>
-    <a href="#groupownerappname" title="GroupOwnerAppName">GroupOwnerAppName</a>: <i>String</i>
+    <a href="#groupdescription" title="GroupDescription">GroupDescription</a>: <i>String</i>
+    <a href="#owners" title="Owners">Owners</a>: <i>
+      - <a href="owner.md">Owner</a></i>
     <a href="#credentialappclientid" title="CredentialAppClientId">CredentialAppClientId</a>: <i>String</i>
     <a href="#credentialappapitoken" title="CredentialAppAPIToken">CredentialAppAPIToken</a>: <i>String</i>
     <a href="#credentialtenantid" title="CredentialTenantId">CredentialTenantId</a>: <i>String</i>
@@ -49,23 +52,39 @@ _Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/l
 
 #### GroupType
 
-Either `SECURITY` or `Microsoft365`
+Type of group to create
 
 _Required_: Yes
 
 _Type_: String
 
+_Allowed Values_: <code>SECURITY</code> | <code>Microsoft365</code>
+
 _Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-replacement)
 
-#### GroupOwnerAppName
+#### GroupDescription
 
-The Name of the application that will own the group
+Description of the group
 
 _Required_: Yes
 
 _Type_: String
 
-_Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-replacement)
+_Minimum Length_: <code>1</code>
+
+_Maximum Length_: <code>1024</code>
+
+_Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
+
+#### Owners
+
+The Owners of the group
+
+_Required_: Yes
+
+_Type_: List of <a href="owner.md">Owner</a>
+
+_Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 
 #### CredentialAppClientId
 

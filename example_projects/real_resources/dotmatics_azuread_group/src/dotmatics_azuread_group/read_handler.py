@@ -7,7 +7,7 @@ from cf_extension_core import BaseHandler, CustomResourceHelpers
 from ms_graph_client.services.groups import Groups
 
 # Locals
-from .models import ResourceModel, ResourceHandlerRequest
+from .models import ResourceModel, ResourceHandlerRequest, Owner
 from .common import Common
 
 
@@ -65,6 +65,7 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             group_info = api_client.groups.get_by_object_id(group_id=group_identifier)
             # LOG.info("Group Info: "+ str(group_info))
             group_name = group_info["displayName"]
+            group_description = group_info["description"]
 
             if len(group_info["groupTypes"]) == 0:
                 group_type = Groups.GroupType.SECURITY.name
@@ -80,15 +81,30 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             s.GroupName = group_name
             s.GroupType = group_type
             s.GroupId = group_id
+            s.GroupDescription = group_description
             DB.update_model(s)
+
+            # Due to bug in python plugin from AWS we cant ignore insertion order for Owners in json schema
+            # So the best I can do is do a non-order based comparison and return in kind.
+            owners: list[Owner] = []
+            if Common.group_owners_are_equal(api_client=api_client, group_identifier=group_identifier, desired_state=s):
+                assert s.Owners is not None
+                owners = list(s.Owners.__iter__())
+            else:
+                owners_api = api_client.groups.list_owners(group_id=group_identifier)
+                for item in owners_api:
+                    if item["@odata.type"] == "#microsoft.graph.user":
+                        owners.append(Owner(OwnerType="USER", Name=item["userPrincipalName"]))
+                    else:
+                        raise NotImplementedError()
 
             # What needs to be filled out according to contract?
             model = ResourceModel(
                 GroupName=group_name,
+                GroupDescription=group_description,
                 GroupType=group_type,
                 GroupId=group_id,
-                # Make this come from DB?  Do we care about getting it from the APIs?
-                GroupOwnerAppName=s.GroupOwnerAppName,
+                Owners=owners,
                 # All of this is hard coded or None for WriteOnlyProperties
                 CredentialAppClientId=None,
                 CredentialAppAPIToken=None,
