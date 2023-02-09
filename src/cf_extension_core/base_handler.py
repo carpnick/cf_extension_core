@@ -101,6 +101,17 @@ class BaseHandler(Generic[T, K]):
         # https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249
         self._callback_context["working_model"] = data._serialize()
 
+    def is_model_saved_in_callback(self) -> bool:
+        """
+        Loads the ResourceModel data from the callback context and deserializes it into the proper object type
+        :param cls:
+        :return:
+        """
+        if "working_model" in self._callback_context:
+            return True
+        else:
+            return False
+
     def get_model_from_callback(self, cls: typing.Type[T] = typing.Type[T]) -> T:
         """
         Loads the ResourceModel data from the callback context and deserializes it into the proper object type
@@ -279,6 +290,7 @@ class BaseHandler(Generic[T, K]):
     def run_call_chain_with_stabilization(
         self,
         func_list: list[typing.Callable[[], bool]],
+        in_progress_model: T,
         func_retries_sleep_time: int = 3,
         callback_delay: int = 1,
         callback_message: str = "",
@@ -293,6 +305,8 @@ class BaseHandler(Generic[T, K]):
 
         :param func_list: List of lambda functions pointing at your implementation methods.
         Each method must return True/False - True if executed to complete or False needs re-execution.
+        :param in_progress_model: Current in progress model.  This function requires there to be a current model in the
+         callback to allow for timing out and re-executing the handler.
 
         :param func_retries_sleep_time: Time in between executing the same function again.
         :param callback_delay: Total time in seconds before Cloudformation recalls the function
@@ -300,6 +314,10 @@ class BaseHandler(Generic[T, K]):
         :return: ProgressEvent if timed out or None which means all functions ran to complete.
         """
         for func in func_list:
+
+            if not self.is_model_saved_in_callback():
+                self.save_model_to_callback(data=in_progress_model)
+
             pe: typing.Union[None, ProgressEvent] = self._stabilize(
                 function=func,
                 sleep_seconds=func_retries_sleep_time,
