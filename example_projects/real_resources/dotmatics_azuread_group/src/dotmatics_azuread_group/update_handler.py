@@ -103,11 +103,13 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             # If our code reaches here
             # in theory all API calls should have succeeded and we are just waiting for stabilization
             # Stabilize Description and Owners - credentials are way past stabilization :)
-            self.run_call_chain_with_stabilization(
+            pe = self.run_call_chain_with_stabilization(
                 func_list=[lambda: self._full_stabilization()],
                 in_progress_model=desired_state,
-                func_retries_sleep_time=10, # Artificially high
+                func_retries_sleep_time=15,  # Artificially high to prove timeouts can be handled
             )
+            if pe is not None:
+                return pe
 
             # Updating model based on request - non-create only properties
             s.CredentialAppClientId = desired_state.CredentialAppClientId
