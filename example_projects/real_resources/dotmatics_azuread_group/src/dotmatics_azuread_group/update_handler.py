@@ -71,7 +71,7 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             desired_state.CredentialTenantId = s.CredentialTenantId
             desired_state.GroupName = s.GroupName
             desired_state.GroupType = s.GroupType
-            desired_state.GroupId = s.GroupId # Because CF doesnt send it through sometimes...
+            desired_state.GroupId = s.GroupId  # Because CF doesnt send it through sometimes...
             # desired_state.GeneratedId # read only primary identifier
 
             # This leaves just the following parameters that are allowed to be updated according to contract.
@@ -105,6 +105,8 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             # Stabilize Description and Owners - credentials are way past stabilization :)
             self.run_call_chain_with_stabilization(
                 func_list=[lambda: self._full_stabilization()],
+                in_progress_model=desired_state,
+                func_retries_sleep_time=4,
             )
 
             # Updating model based on request - non-create only properties

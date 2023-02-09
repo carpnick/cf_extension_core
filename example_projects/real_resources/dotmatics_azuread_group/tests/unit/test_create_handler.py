@@ -111,6 +111,8 @@ def test_create_success_with_success(mocker: MockFixture) -> None:
     )
 
     with mocker.patch.context_manager(target=ch, attribute="create_resource", return_value=db_context):
+        assert r.desiredResourceState is not None
+        ch.save_model_to_callback(r.desiredResourceState)
         ch.execute()
 
         # What to assert

@@ -63,10 +63,12 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             # Stabilize
             # Run continuously until we can do a read
             LOG.info("Stabilizing group")
+
             pe = self.run_call_chain_with_stabilization(
                 func_list=[
                     lambda: self._stabilize_group_creation(),
                 ],
+                in_progress_model=self.get_model_from_callback(),
                 func_retries_sleep_time=3,
             )
             if pe is not None:
