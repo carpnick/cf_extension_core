@@ -71,9 +71,8 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             desired_state.CredentialTenantId = s.CredentialTenantId
             desired_state.GroupName = s.GroupName
             desired_state.GroupType = s.GroupType
-
-            # desired_state.GeneratedId # read only
-            # desired_state.GroupId  # read only
+            desired_state.GroupId = s.GroupId # Because CF doesnt send it through sometimes...
+            # desired_state.GeneratedId # read only primary identifier
 
             # This leaves just the following parameters that are allowed to be updated according to contract.
             # CredentialAppClientId
