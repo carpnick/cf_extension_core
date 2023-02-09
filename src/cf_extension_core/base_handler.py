@@ -99,7 +99,7 @@ class BaseHandler(Generic[T, K]):
         :return:
         """
         # https://github.com/aws-cloudformation/cloudformation-cli-python-plugin/issues/249
-        self._callback_context["working_model"] = data.__dict__
+        self._callback_context["working_model"] = data._serialize()
 
     def get_model_from_callback(self, cls: typing.Type[T] = typing.Type[T]) -> T:
         """
