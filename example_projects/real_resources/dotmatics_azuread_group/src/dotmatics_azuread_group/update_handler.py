@@ -106,7 +106,7 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             self.run_call_chain_with_stabilization(
                 func_list=[lambda: self._full_stabilization()],
                 in_progress_model=desired_state,
-                func_retries_sleep_time=4,
+                func_retries_sleep_time=10, # Artificially high
             )
 
             # Updating model based on request - non-create only properties
