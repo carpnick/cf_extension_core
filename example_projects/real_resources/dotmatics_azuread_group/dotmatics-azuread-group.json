@@ -1,7 +1,7 @@
 {
     "typeName": "Dotmatics::AzureAD::Group",
     "description": "Creates an Azure AD Group",
-    "replacementStrategy": "delete_then_create",
+    "replacementStrategy": "create_then_delete",
     "tagging": {
         "taggable": false
     },
