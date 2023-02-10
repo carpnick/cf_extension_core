@@ -82,7 +82,9 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
         owners: list[Owner] = []
         assert self.request.desiredResourceState is not None
         if Common.group_owners_are_equal(
-            api_client=api_client, group_identifier=group_identifier, desired_state=self.request.desiredResourceState
+            api_client=api_client,
+            group_identifier=group_identifier,
+            desired_state=db_model,
         ):
             assert db_model.Owners is not None
             owners = list(db_model.Owners.__iter__())
