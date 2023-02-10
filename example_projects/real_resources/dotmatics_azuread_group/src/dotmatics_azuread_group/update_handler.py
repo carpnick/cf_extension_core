@@ -58,21 +58,10 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             group_identifier = CustomResourceHelpers.get_naked_resource_identifier_from_string(
                 primary_identifier=primary_identifier
             )
-
-            # CreateOnly Properties MUST be the same in an UPDATE
-            # Lets guarantee that by pulling from DB tier and setting them.
-            # This also solves if AWS framework has any inconsistencies with the Contract tests.
-            # It also forces honoring of contract - no matter what end user puts in.
-            # This might yield unexpected results but it guarantees following the contract the developer intended.
-            # We could make this better user facing by doing a comparison and outputting an error, but since
-            # contract test randomly break this - it is hard to do a one size fits all implementation.
-
             s: ResourceModel = DB.read_model(ResourceModel)
-            desired_state.CredentialTenantId = s.CredentialTenantId
-            desired_state.GroupName = s.GroupName
-            desired_state.GroupType = s.GroupType
-            desired_state.GroupId = s.GroupId  # Because CF doesnt send it through sometimes...
-            # desired_state.GeneratedId # read only primary identifier
+
+            # Handle inconsistencies of AWS Framework and CF to guarantee contract
+            self._set_variables(desired_state=desired_state, db_model=s)
 
             # This leaves just the following parameters that are allowed to be updated according to contract.
             # CredentialAppClientId
@@ -82,9 +71,9 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
 
             # Validate new creds are good if there are new ones
             api_client = Common.generate_api_client(desired_state)
-            api_client.groups.validate_credentials()
+            api_client.groups.validate_credentials()  # Since it can be updated
 
-            # Idempotent changes with callback opt outs for Description and owners
+            # Idempotent changes with callback opt-out for Description and Owners
             group_info = api_client.groups.get_by_object_id(group_id=group_identifier)
             self._descrption_peform_update(
                 group_info=group_info,
@@ -106,7 +95,7 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             pe = self.run_call_chain_with_stabilization(
                 func_list=[lambda: self._full_stabilization()],
                 in_progress_model=desired_state,
-                func_retries_sleep_time=15,  # Artificially high to prove timeouts can be handled
+                func_retries_sleep_time=5,
             )
             if pe is not None:
                 return pe
@@ -139,6 +128,23 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
     #         )
     #         self.callback_context["_owners_need_updates"] = not is_equal
     #         return typing.cast(bool, self.callback_context["_owners_need_updates"])
+
+    def _set_variables(self, desired_state: ResourceModel, db_model: ResourceModel) -> None:
+        # CreateOnly Properties MUST be the same in an UPDATE
+        # Lets guarantee that by pulling from DB tier and setting them.
+        # This also solves if AWS framework has any inconsistencies with the Contract tests.
+        # It also forces honoring of contract - no matter what end user puts in.
+        # This might yield unexpected results but it guarantees following the contract the developer intended.
+        # We could make this better user facing by doing a comparison and outputting an error, but since
+        # contract test randomly break this - it is hard to do a one size fits all implementation.
+
+        desired_state.CredentialTenantId = db_model.CredentialTenantId
+        desired_state.GroupName = db_model.GroupName
+        desired_state.GroupType = db_model.GroupType
+
+        # Apparently non-create-only properties are not guaranteed if they dont change?
+        # So if we need the RO property set - we should do it here.  Just not the Primary Identifier, that is provided
+        desired_state.GroupId = db_model.GroupId  # Because CF doesnt send it through sometimes... - CONFIRMED
 
     def _descrption_peform_update(
         self,

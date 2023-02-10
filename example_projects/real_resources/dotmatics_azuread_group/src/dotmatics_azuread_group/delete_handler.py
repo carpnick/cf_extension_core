@@ -61,7 +61,7 @@ class DeleteHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
                     lambda: self._stabilize_group_deletion(),
                 ],
                 in_progress_model=self.db_model,
-                func_retries_sleep_time=3,
+                func_retries_sleep_time=5,
             )
             if pe is not None:
                 return pe

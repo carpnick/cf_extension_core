@@ -51,65 +51,60 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             # need to get them from our data tier instead.
             s: ResourceModel = DB.read_model(ResourceModel)
 
-            # Need to this here since DB tier is the only guaranteed thing to have it.
-            api_client = Common.generate_api_client(s)
-
-            # From DB tier ONLY with verification
-            # Need group id for API call
-            primary_identifier = self.validate_identifier(s.GeneratedId)
-            group_identifier = CustomResourceHelpers.get_naked_resource_identifier_from_string(
-                primary_identifier=primary_identifier
-            )
-
-            # Get Group info
-            group_info = api_client.groups.get_by_object_id(group_id=group_identifier)
-            # LOG.info("Group Info: "+ str(group_info))
-            group_name = group_info["displayName"]
-            group_description = group_info["description"]
-
-            if len(group_info["groupTypes"]) == 0:
-                group_type = Groups.GroupType.SECURITY.name
-            else:
-                group_type = group_info["groupTypes"][0]
-
-            group_id = group_info["id"]
-
-            # Update data tier (in case it has changed)
-            # But we need to only update the pieces that have changed, none of the credential stuff since it is not
-            # guaranteed from read_handler call, but we do need creds for later during delete.  So update the original
-            # DB model with api pieces only
-            s.GroupName = group_name
-            s.GroupType = group_type
-            s.GroupId = group_id
-            s.GroupDescription = group_description
-            DB.update_model(s)
-
-            # Due to bug in python plugin from AWS we cant ignore insertion order for Owners in json schema
-            # So the best I can do is do a non-order based comparison and return in kind.
-            owners: list[Owner] = []
-            if Common.group_owners_are_equal(api_client=api_client, group_identifier=group_identifier, desired_state=s):
-                assert s.Owners is not None
-                owners = list(s.Owners.__iter__())
-            else:
-                owners_api = api_client.groups.list_owners(group_id=group_identifier)
-                for item in owners_api:
-                    if item["@odata.type"] == "#microsoft.graph.user":
-                        owners.append(Owner(OwnerType="USER", Name=item["userPrincipalName"]))
-                    else:
-                        raise NotImplementedError()
-
-            # What needs to be filled out according to contract?
-            model = ResourceModel(
-                GroupName=group_name,
-                GroupDescription=group_description,
-                GroupType=group_type,
-                GroupId=group_id,
-                Owners=owners,
-                # All of this is hard coded or None for WriteOnlyProperties
-                CredentialAppClientId=None,
-                CredentialAppAPIToken=None,
-                CredentialTenantId=None,
-                GeneratedId=s.GeneratedId,
-            )
+            model = self.read_group_info(db_model=s)
 
             return self.return_success_event(resource_model=model)
+
+    def read_group_info(self, db_model: ResourceModel) -> ResourceModel:
+        # Need to this here since DB tier is the only guaranteed thing to have it.
+        api_client = Common.generate_api_client(db_model)
+
+        # Need group id for API call
+        primary_identifier = self.validate_identifier(db_model.GeneratedId)
+        group_identifier = CustomResourceHelpers.get_naked_resource_identifier_from_string(
+            primary_identifier=primary_identifier
+        )
+
+        # Get Group info
+        group_info = api_client.groups.get_by_object_id(group_id=group_identifier)
+        # LOG.info("Group Info: "+ str(group_info))
+        group_name = group_info["displayName"]
+        group_description = group_info["description"]
+        group_id = group_info["id"]
+
+        if len(group_info["groupTypes"]) == 0:
+            group_type = Groups.GroupType.SECURITY.name
+        else:
+            group_type = group_info["groupTypes"][0]
+
+        # Due to bug in python plugin from AWS we cant ignore insertion order for Owners in json schema
+        # So the best I can do is do a non-order based comparison and return in kind.
+        owners: list[Owner] = []
+        assert self.request.desiredResourceState is not None
+        if Common.group_owners_are_equal(
+            api_client=api_client, group_identifier=group_identifier, desired_state=self.request.desiredResourceState
+        ):
+            assert db_model.Owners is not None
+            owners = list(db_model.Owners.__iter__())
+        else:
+            owners_api = api_client.groups.list_owners(group_id=group_identifier)
+            for item in owners_api:
+                if item["@odata.type"] == "#microsoft.graph.user":
+                    owners.append(Owner(OwnerType="USER", Name=item["userPrincipalName"]))
+                else:
+                    raise NotImplementedError()
+
+        # What needs to be filled out according to contract?
+        model = ResourceModel(
+            GroupName=group_name,
+            GroupDescription=group_description,
+            GroupType=group_type,
+            GroupId=group_id,
+            Owners=owners,
+            # All of this is hard coded or None for WriteOnlyProperties
+            CredentialAppClientId=None,
+            CredentialAppAPIToken=None,
+            CredentialTenantId=None,
+            GeneratedId=db_model.GeneratedId,
+        )
+        return model
