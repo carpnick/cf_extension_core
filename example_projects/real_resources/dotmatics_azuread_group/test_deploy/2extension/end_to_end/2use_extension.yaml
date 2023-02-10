@@ -1,17 +1,46 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Try Using Extension
-Resources:
 
+Parameters:
+  GroupName:
+    Type: 'String'
+    Default: TestGroup2
+
+  GroupDescription:
+    Type: 'String'
+    Default: TestGroup2_description
+
+  AppClientId:
+    Type: 'String'
+    Default: xxxxxxxxx
+
+  AppAPIToken:
+    Type: 'String'
+    Default: xxxxxxx
+
+  TenantId:
+    Type: 'String'
+    Default: xxxxxx
+
+Resources:
   SampleEvent:
     Type: Dotmatics::AzureAD::Group
     Properties:
-      GroupName: TestGroup2
+      GroupName: !Ref GroupName
       GroupType: SECURITY
-      GroupOwnerAppName: Test
-      CredentialAppClientId: "xxxxxxxxx"
-      CredentialAppAPIToken: "xxxxxxxxx"
-      CredentialTenantId:    "xxxxxxxx"
+      GroupDescription: !Ref GroupDescription
+      Owners:
+        - OwnerType: USER
+          Name: AlexW@qkdw.onmicrosoft.com
+#        - OwnerType: USER
+#          Name: xxxxxx@xxxxxx.onmicrosoft.com
+#        - OwnerType: USER
+#          Name: xxxxxxx@xxxxxx.onmicrosoft.com
+
+      CredentialAppClientId: !Ref AppClientId
+      CredentialAppAPIToken: !Ref AppAPIToken
+      CredentialTenantId:    !Ref TenantId
 
 Outputs:
   GroupID:

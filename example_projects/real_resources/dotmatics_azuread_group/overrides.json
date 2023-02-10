@@ -1,17 +1,32 @@
 {
   "CREATE": {
-    "/GroupName": "TestGroup1",
+    "/GroupName": "TestGroupCTests",
     "/GroupType": "SECURITY",
-    "/GroupOwnerAppName": "Test",
-    "/CredentialAppClientId": "xxxxxxx",
-    "/CredentialAppAPIToken": "xxxxxxx",
-    "/CredentialTenantId": "xxxxxxx"
+    "/CredentialAppClientId": "xxxxxxxxxx",
+    "/CredentialAppAPIToken": "xxxxxxxxxx",
+    "/CredentialTenantId": "xxxxxxxxxxx",
+    "/Owners": [
+      {
+        "OwnerType": "USER",
+        "Name": "xxxxxx@xxxxx.onmicrosoft.com"
+      }
+    ]
   },
   "UPDATE": {
-    "/GroupName": "TestGroup1",
+    "/GroupName": "TestGroupCTests",
     "/GroupType": "SECURITY",
-    "/GroupOwnerAppName": "Test",
-    "/CredentialAppClientId": "xxxxxxx",
-    "/CredentialAppAPIToken": "xxxxxxx"
+    "/GroupDescription": "Coolness",
+    "/CredentialAppClientId": "xxxxxxxxxx",
+    "/CredentialAppAPIToken": "xxxxxxxx",
+    "/Owners": [
+      {
+        "OwnerType": "USER",
+        "Name": "xxxxx@xxxxx.onmicrosoft.com"
+      },
+      {
+        "OwnerType": "USER",
+        "Name": "xxxxx@xxxxx.onmicrosoft.com"
+      }
+    ]
   }
 }
