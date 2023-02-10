@@ -52,34 +52,32 @@ class ReadHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             assert s.AppName is not None
             assert s.GroupId is not None
 
-            # Need to this here since DB tier is the only guaranteed thing to have it.
-            api_client = Common.generate_api_client(s)
-
-            # From DB tier ONLY with verification
-            # Need group id for API call - NM Not true
-            # primary_identifier = self.validate_identifier(s.GeneratedId)
-            # assignment_identifier = CustomResourceHelpers.get_naked_resource_identifier_from_string(
-            #     primary_identifier=primary_identifier
-            # )
-
             # Get assignment info?
-            # Get App and then the sp ID
-            # Then ask the question - is the group assigned to the app
-            aws_app_json = api_client.applications.get_by_application_name(app_name=s.AppName)
-            aws_sp_json = api_client.applications.get_service_principal_by_app_id(aws_app_json["appId"])
-            aws_sp_id = aws_sp_json["id"]
+            # There is no REST API - there are no real parameters to the assignment either.
+            # We could get the sp id of the app and lookup to see if the group is assigned to the sp id - but why?
+            # Doesnt give us info we can use in here.  So ignoring any REST APIs
+            # Design Decision - just return DB tier - Until we have APIs or an active bug we can work on, no changes.
 
-            # If its not assigned to the app, something changed and the Assignment ID is no longer valid....
-            # Technically it would be nice to use a get method on the assignment id
-            # However we are using this API -
-            # https://learn.microsoft.com/en-us/graph/api/serviceprincipal-post-approleassignedto?view=graph-rest-1.0&tabs=http
-            # It has no Getter.  There is a list - but that isnt much better than this implementation....
-            # TODO: Determine if this should be refactored.
-            val = api_client.groups.is_group_assigned_to_app(app_service_principal_id=aws_sp_id, group_id=s.GroupId)
-            if not val:
-                s.AssignmentId = None
-
-            DB.update_model(s)
+            # Need to this here since DB tier is the only guaranteed thing to have it.
+            # api_client = Common.generate_api_client(s)
+            #
+            # # Get App and then the sp ID
+            # # Then ask the question - is the group assigned to the app
+            # aws_app_json = api_client.applications.get_by_application_name(app_name=s.AppName)
+            # aws_sp_json = api_client.applications.get_service_principal_by_app_id(aws_app_json["appId"])
+            # aws_sp_id = aws_sp_json["id"]
+            #
+            # # If its not assigned to the app, something changed and the Assignment ID is no longer valid....
+            # # Technically it would be nice to use a get method on the assignment id
+            # # However we are using this API -
+            # # https://learn.microsoft.com/en-us/graph/api/serviceprincipal-post-approleassignedto?view=graph-rest-1.0&tabs=http
+            # # It has no Getter.  There is a list - but that isnt much better than this implementation....
+            # # : Determine if this should be refactored.
+            # val = api_client.groups.is_group_assigned_to_app(app_service_principal_id=aws_sp_id, group_id=s.GroupId)
+            # if not val:
+            #     s.AssignmentId = None
+            #
+            # DB.update_model(s)
 
             model = ResourceModel(
                 AssignmentId=s.AssignmentId,

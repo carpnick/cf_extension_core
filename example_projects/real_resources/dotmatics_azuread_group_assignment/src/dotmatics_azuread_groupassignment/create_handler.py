@@ -56,8 +56,9 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
                     primary_identifier=self.validate_identifier(saved_model.GeneratedId),
                     current_model=saved_model,
                 )
-                return self.return_in_progress_event(message="Assignment created, stabilizing",
-                                                     call_back_delay_seconds=4)
+                return self.return_in_progress_event(
+                    message="Assignment created, stabilizing", call_back_delay_seconds=4
+                )
 
             # Stabilize
             # Run continuously until we can do a read
@@ -66,7 +67,8 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
                 func_list=[
                     lambda: self._stabilize_assignment_creation(),
                 ],
-                func_retries_sleep_time=3,
+                func_retries_sleep_time=5,
+                in_progress_model=self.get_model_from_callback(),
             )
             if pe is not None:
                 return pe
@@ -141,8 +143,8 @@ class CreateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             aws_sp_json = self.api_client.applications.get_service_principal_by_app_id(aws_app_json["appId"])
             aws_sp_id = aws_sp_json["id"]
 
-            if self.api_client.groups.is_group_assigned_to_app(
-                app_service_principal_id=aws_sp_id, group_id=self.request.desiredResourceState.GroupId
+            if self.api_client.groups.is_group_assigned_to_app(app_service_principal_id=aws_sp_id,
+                                                               group_id=self.request.desiredResourceState.GroupId,
             ):
                 LOG.info("Incrementing _stabilize_assignment_found_times")
                 self.callback_context["_stabilize_assignment_found_times"] = (

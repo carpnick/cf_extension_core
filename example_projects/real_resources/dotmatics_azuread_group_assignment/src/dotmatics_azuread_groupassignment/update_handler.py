@@ -51,19 +51,9 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
 
         # Update of resource
         with self.update_resource(primary_identifier=primary_identifier) as DB:
-            # CreateOnly Properties MUST be the same in an UPDATE
-            # Lets guarantee that by pulling from DB tier and setting them.
-            # This also solves if AWS framework has any inconsistencies with the Contract tests.
-            # It also forces honoring of contract - no matter what end user puts in.
-            # This might yield unexpected results but it guarantees following the contract the developer intended.
-            # We could make this better user facing by doing a comparison and outputting an error, but since
-            # contract test randomly break this - it is hard to do a one size fits all implementation.
-
             s: ResourceModel = DB.read_model(ResourceModel)
-            desired_state.CredentialTenantId = s.CredentialTenantId
-            desired_state.AppRoleName = s.AppRoleName
-            desired_state.AppName = s.AppName
-            desired_state.GroupId = s.GroupId
+
+            self._set_variables(desired_state=desired_state, db_model=s)
 
             # This leaves just the following parameters that are allowed to be updated according to contract.
             # CredentialAppClientId
@@ -84,3 +74,20 @@ class UpdateHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
             db_resource=self.db_resource,
             total_timeout_in_minutes=self.total_timeout_in_minutes,
         ).execute()
+
+    def _set_variables(self, desired_state: ResourceModel, db_model: ResourceModel) -> None:
+        # CreateOnly Properties MUST be the same in an UPDATE
+        # Lets guarantee that by pulling from DB tier and setting them.
+        # This also solves if AWS framework has any inconsistencies with the Contract tests.
+        # It also forces honoring of contract - no matter what end user puts in.
+        # This might yield unexpected results but it guarantees following the contract the developer intended.
+        # We could make this better user facing by doing a comparison and outputting an error, but since
+        # contract test randomly break this - it is hard to do a one size fits all implementation.
+        desired_state.GroupId = db_model.GroupId
+        desired_state.AppName = db_model.AppName
+        desired_state.AppRoleName = db_model.AppRoleName
+        desired_state.CredentialTenantId = db_model.CredentialTenantId
+
+        # Apparently non-create-only properties are not guaranteed if they dont change?
+        # So if we need the RO property set - we should do it here.  Just not the Primary Identifier, that is provided
+        desired_state.AssignmentId = db_model.AssignmentId  # Because CF doesnt send it through sometimes... - CONFIRMED

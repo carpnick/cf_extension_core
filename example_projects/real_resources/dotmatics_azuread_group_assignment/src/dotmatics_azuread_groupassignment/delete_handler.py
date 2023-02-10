@@ -62,7 +62,8 @@ class DeleteHandler(BaseHandler[ResourceModel, ResourceHandlerRequest]):
                 func_list=[
                     lambda: self._stabilize_assignment_deletion(),
                 ],
-                func_retries_sleep_time=3,
+                func_retries_sleep_time=5,
+                in_progress_model=self.db_model,
             )
             if pe is not None:
                 return pe

@@ -4,7 +4,7 @@ boto3==1.26.66
 botocore==1.29.66
 cachetools==5.3.0
 certifi==2022.12.7
-cf-extension-core==0.1.dev20230207185519
+cf-extension-core==0.1.dev20230209203344
 cffi==1.15.1
 charset-normalizer==3.0.1
 cloudformation-cli-python-lib==2.1.15

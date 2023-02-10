@@ -1,5 +1,6 @@
 #Uncomment this when ready to test a build
 #set -e
+set +e
 
 echo "Running cfn validate: cfn validate"
 cfn validate

@@ -38,7 +38,7 @@ def create_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
+        total_timeout_in_minutes=5,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
@@ -55,7 +55,7 @@ def update_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
+        total_timeout_in_minutes=5,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
@@ -72,7 +72,7 @@ def delete_handler(
         callback_context=callback_context,
         type_name=TYPE_NAME,
         db_resource=core.generate_dynamodb_resource(session_proxy=session),
-        total_timeout_in_minutes=2,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
+        total_timeout_in_minutes=5,  # Should match Schema value - unit test validated - https://shorturl.at/gHK46
     ).execute()
 
 
