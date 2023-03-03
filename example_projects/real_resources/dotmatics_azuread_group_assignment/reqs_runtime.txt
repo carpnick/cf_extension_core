@@ -1,5 +1,0 @@
-cloudformation-cli-python-lib>=2.1.9
-boto3
-requests
-cf-extension-core==0.1.dev20230209203344
-ms-graph-client==0.1.6
