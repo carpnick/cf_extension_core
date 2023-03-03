@@ -1,6 +1,9 @@
 #!/bin/zsh
 set -e
 
+# Run this before trying to run this script.  Make sure poetry is installed
+#export PATH="~/.local/bin:$PATH"
+
 echo "Installing files"
 poetry install --no-interaction
 

@@ -20,7 +20,7 @@
 - High level commands
    ```
     curl -sSL https://install.python-poetry.org | python3 -
-    export PATH="/Users/nicholascarpenter/.local/bin:$PATH"
+    export PATH="~/.local/bin:$PATH"
     poetry --version
     poetry add boto3
   
