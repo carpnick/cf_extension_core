@@ -237,9 +237,10 @@ class CustomResourceHelpers:
 
             cur_time = datetime.datetime.utcnow()
 
-            logger.info("Entry Time: " + entry_time.isoformat())
-            logger.info("Current Time: " + cur_time.isoformat())
-            logger.info("Compare Time: " + compare_time.isoformat())
+            # Enable only if trying to debug this function in a Custom Extension
+            #logger.info("Entry Time: " + entry_time.isoformat())
+            #logger.info("Current Time: " + cur_time.isoformat())
+            #logger.info("Compare Time: " + compare_time.isoformat())
 
             if cur_time > compare_time:
                 return True
