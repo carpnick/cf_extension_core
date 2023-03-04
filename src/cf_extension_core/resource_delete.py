@@ -2,9 +2,10 @@ import logging
 import types
 from typing import Type, Literal, TYPE_CHECKING, Optional
 
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseResourceHandlerRequest
 
-from cf_extension_core.resource_base import ResourceBase
+from cf_extension_core.resource_base import ResourceBase as _ResourceBase
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
@@ -15,7 +16,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class ResourceDelete(ResourceBase):
+class ResourceDelete(_ResourceBase):
     """
     Easily usable class that can be used to Delete resources in the custom resource code.
     """
@@ -42,7 +43,21 @@ class ResourceDelete(ResourceBase):
             primary_identifier=primary_identifier,
             type_name=type_name,
         )
-        pass
+
+        self._set_delete = False
+
+    def read_model(
+        self,
+        model_type: Type[_ResourceBase.T],
+    ) -> _ResourceBase.T:
+
+        if self._primary_identifier is None:
+            raise Exception("Primary Identifier cannot be Null")
+
+        return self._db_item_get_model(model_type=model_type)
+
+    def set_resource_deleted(self) -> None:
+        self._set_delete = True
 
     def __enter__(self) -> "ResourceDelete":
         logger.info("DynamoDelete Enter... ")
@@ -62,19 +77,33 @@ class ResourceDelete(ResourceBase):
 
         logger.info("DynamoDelete Exit...")
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
+        try:
 
-            self._db_item_delete()
-        else:
-            # We failed in delete logic
-            logger.info("Has Failure = True, row will not be deleted")
+            if exception_type is None:
+                logger.info("Has Failure = False")
 
-            # Failed during delete of resource for any number of reasons
-            # Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
-            # Dont update the Row
+                # If was explicitly told it was deleted...
+                # Sometimes we need to stabilize during deletion
+                if self._set_delete:
+                    self._db_item_delete()
 
-        logger.info("DynamoDelete Exit Completed")
+                return False
 
-        # let exception flourish always
-        return False
+            else:
+                # We failed in delete logic
+                logger.info("Has Failure = True, row will not be deleted")
+
+                # Failed during delete of resource for any number of reasons
+                # Assuming it failed with a dependency.  Nothing deleted from dynamo DB perspective
+                # Dont update the Row
+
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
+
+                # We failed hard so we should raise a different exception that the
+                raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
+                    "CR Broke - DELETE - " + str(exception_value)
+                ) from exception_value
+
+        finally:
+            logger.info("DynamoDelete Exit Completed")

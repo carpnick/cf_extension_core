@@ -17,17 +17,25 @@
 
 
 # Development
-- Use of poetry
-- ```commandline
-curl -sSL https://install.python-poetry.org | python3 -
-export PATH="/Users/nicholascarpenter/.local/bin:$PATH"
-poetry --version
-poetry add boto3
+- High level commands
+   ```
+    curl -sSL https://install.python-poetry.org | python3 -
+    export PATH="~/.local/bin:$PATH"
+    poetry --version
+    poetry add boto3
+  
+    poetry add --group dev  pytest
+  
+    poetry install --no-root
+    poetry build
+    poetry config pypi-token.pypi ""
+    poetry publish
+  ```
+- Generating Stubs after all 3rd party stubs are installed
+    ```
+    find src/ -type f -name '*.pyi' -exec rm {} +
+    stubgen src/ -o src/  --include-private 
+    ```
+  - Do not run again after manually changed.
+  - Build system updated to validate stubs via `stubtest`
 
-poetry add --group dev  pytest
-
-poetry install --no-root
-poetry build
-poetry config pypi-token.pypi ""
-poetry publish
-```

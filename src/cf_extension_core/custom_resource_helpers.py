@@ -1,8 +1,11 @@
-import datetime
+import datetime as datetime
+import logging
 
 from cloudformation_cli_python_lib.identifier_utils import generate_resource_identifier
 import cloudformation_cli_python_lib.exceptions as exceptions
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class CustomResourceHelpers:
@@ -11,11 +14,27 @@ class CustomResourceHelpers:
     STANDARD_SEPARATOR = "::"
 
     @staticmethod
-    def generate_primary_identifier_for_resource_tracking(
-        stack_id: str,
-        logical_resource_id: str,
-        resource_identifier,
+    def init_logging() -> None:
+        # Total hack but we need to know where the message is coming from
+        # There are alot of layers involved - lambda  / AWS Extensions Framework / cf_extenstion_core / extension native
+        for handler in logging.root.handlers:
+            fmt = handler.formatter._fmt.rstrip("\n") + " - %(pathname)s:%(funcName)s:%(lineno)d \n"
+            datefmt = handler.formatter.datefmt
+            handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+
+    @staticmethod
+    def generate_id_resource(
+        stack_id: Optional[str],
+        logical_resource_id: Optional[str],
+        resource_identifier: str,
     ) -> str:
+
+        if stack_id is None:
+            stack_id = "-"
+
+        if logical_resource_id is None:
+            logical_resource_id = "-"
+
         identifier = (
             stack_id
             + CustomResourceHelpers.STANDARD_SEPARATOR
@@ -83,10 +102,17 @@ class CustomResourceHelpers:
         return identifier
 
     @staticmethod
-    def generate_primary_identifier_for_resource_tracking_read_only_resource(
-        stack_id: str,
-        logical_resource_id: str,
+    def generate_id_read_only_resource(
+        stack_id: Optional[str],
+        logical_resource_id: Optional[str],
     ) -> str:
+
+        if stack_id is None:
+            stack_id = "-"
+
+        if logical_resource_id is None:
+            logical_resource_id = "-"
+
         import uuid
 
         uuidstr = str(uuid.uuid4())  # Not guaranteed unique technically - but the best we can do
@@ -106,7 +132,7 @@ class CustomResourceHelpers:
         return identifier
 
     @staticmethod
-    def get_naked_resource_identifier_from_string(primary_identifier: str):
+    def get_naked_resource_identifier_from_string(primary_identifier: str) -> str:
         array = primary_identifier.split(
             CustomResourceHelpers.STANDARD_SEPARATOR + CustomResourceHelpers.STANDARD_SEPARATOR
         )
@@ -175,12 +201,8 @@ class CustomResourceHelpers:
         return primary_name
 
     @staticmethod
-    def _callback_add_handler_entry_time(
-        callback_context: MutableMapping[str, Any],
-    ) -> None:
-        # No if statement here
-        # If we get re-invoked we need to reset handler entry time to the new invocation
-        callback_context["handler_entry_time"] = datetime.datetime.utcnow()
+    def _callback_add_handler_entry_time(callback_context: MutableMapping[str, Any]) -> None:
+        callback_context["handler_entry_time"] = datetime.datetime.utcnow().isoformat()
 
     @staticmethod
     def _callback_add_resource_end_time(
@@ -189,26 +211,38 @@ class CustomResourceHelpers:
     ) -> None:
         # If statement makes sure this gets set once and only once for every resource create/update/delete call.
         if "resource_entry_end_time" not in callback_context:
-            callback_context["resource_entry_end_time"] = datetime.datetime.utcnow() + datetime.timedelta(
-                minutes=total_allowed_time_in_minutes
-            )
+            callback_context["resource_entry_end_time"] = (
+                datetime.datetime.utcnow() + datetime.timedelta(minutes=total_allowed_time_in_minutes)
+            ).isoformat()
 
     @staticmethod
-    def should_return_in_progress_due_to_handler_timeout(
-        callback_context: MutableMapping[str, Any],
-    ) -> bool:
-        if "entry_time" not in callback_context:
-            raise exceptions.InternalFailure("entry_time not set in callback state")
+    def should_return_in_progress_due_to_handler_timeout(callback_context: MutableMapping[str, Any]) -> bool:
+        if "handler_entry_time" not in callback_context:
+            raise exceptions.InternalFailure("handler_entry_time not set properly in callback_context")
         else:
-            if (
-                callback_context["entry_time"]
+
+            # If handler entry time + Max return time (60)
+            # - 10 seconds(arbitrary for wiggle room for dynamodb code) < Current time -->
+            # Return before CF kills us.
+
+            assert isinstance(callback_context["handler_entry_time"], str)
+
+            entry_time = datetime.datetime.fromisoformat(callback_context["handler_entry_time"])
+
+            compare_time = (
+                entry_time
                 + datetime.timedelta(seconds=CustomResourceHelpers.ALL_HANDLER_TIMEOUT_THAT_SUPPORTS_IN_PROGRESS)
                 - datetime.timedelta(seconds=10)
-                > datetime.datetime.utcnow()
-            ):
-                # If handler entry time + Max return time (60)
-                # - 10 seconds(arbitrary for wiggle room for dynamodb code) > Current time -->
-                # Return before CF kills us.
+            )
+
+            cur_time = datetime.datetime.utcnow()
+
+            # Enable only if trying to debug this function in a Custom Extension
+            # logger.info("Entry Time: " + entry_time.isoformat())
+            # logger.info("Current Time: " + cur_time.isoformat())
+            # logger.info("Compare Time: " + compare_time.isoformat())
+
+            if cur_time > compare_time:
                 return True
             else:
                 return False
@@ -220,21 +254,9 @@ class CustomResourceHelpers:
         if "resource_entry_end_time" not in callback_context:
             raise exceptions.InternalFailure("resource_entry_end_time not set in callback state")
         else:
-            if callback_context["resource_entry_end_time"] > datetime.datetime.utcnow():
+            # If calculated end time is less than now - we should be timing out with an exception.
+            assert isinstance(callback_context["resource_entry_end_time"], str)
+            orig_time = datetime.datetime.fromisoformat(callback_context["resource_entry_end_time"])
+            if orig_time < datetime.datetime.utcnow():
                 # If resource end time is greater than now we need to return failure due to timeout
                 raise exceptions.InternalFailure(" Timed out trying to create/update/delete resource.")
-
-    @staticmethod
-    def initialize_handler(
-        callback_context: MutableMapping[str, Any],
-        total_allowed_time_in_minutes: int,
-    ) -> None:
-
-        # TODO: Consider overriding the Table name based on Type Name here
-
-        CustomResourceHelpers._callback_add_resource_end_time(
-            callback_context=callback_context,
-            total_allowed_time_in_minutes=total_allowed_time_in_minutes,
-        )
-        CustomResourceHelpers._callback_add_handler_entry_time(callback_context=callback_context)
-        CustomResourceHelpers._return_failure_due_to_timeout(callback_context)

@@ -2,6 +2,7 @@ import logging
 import types
 from typing import Type, Literal, TYPE_CHECKING, Optional
 
+import cloudformation_cli_python_lib.exceptions
 from cloudformation_cli_python_lib.interface import BaseModel
 from cloudformation_cli_python_lib.interface import (
     BaseResourceHandlerRequest as _BaseResourceHandlerRequest,
@@ -56,6 +57,16 @@ class ResourceUpdate(_ResourceBase):
         self._updated_model: Optional[BaseModel] = None
         self._was_model_updated = False
 
+    def read_model(
+        self,
+        model_type: Type[_ResourceBase.T],
+    ) -> _ResourceBase.T:
+
+        if self._primary_identifier is None:
+            raise Exception("Primary Identifier cannot be Null")
+
+        return self._db_item_get_model(model_type=model_type)
+
     def update_model(
         self,
         updated_model: _ResourceBase.T,
@@ -88,22 +99,33 @@ class ResourceUpdate(_ResourceBase):
 
         logger.info("DynamoUpdate Exit...")
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
+        try:
 
-            if self._was_model_updated:
-                logger.info("Row being Updated")
-                self._db_item_update_model(model=self._updated_model)
-        else:
+            if exception_type is None:
+                logger.info("Has Failure = False")
 
-            # We failed in update logic
-            logger.info("Has Failure = True, row NOT updated")
+                if self._was_model_updated:
+                    logger.info("Row being Updated")
+                    self._db_item_update_model(model=self._updated_model)
 
-            # Failed during update of resource for any number of reasons
-            # Assuming it failed with no resource actually changed from a dynamo perspective.
-            # Dont update the Row
+                return False
 
-        logger.info("DynamoUpdate Exit Completed")
+            else:
 
-        # let exception flourish always
-        return False
+                # We failed in update logic
+                logger.info("Has Failure = True, row NOT updated")
+
+                # Failed during update of resource for any number of reasons
+                # Assuming it failed with no resource actually changed from a dynamo perspective.
+                # Dont update the Row
+
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
+
+                # We failed hard so we should raise a different exception that the
+                raise cloudformation_cli_python_lib.exceptions.HandlerInternalFailure(
+                    "CR Broke - UPDATE - " + str(exception_value)
+                ) from exception_value
+
+        finally:
+            logger.info("DynamoUpdate Exit Completed")

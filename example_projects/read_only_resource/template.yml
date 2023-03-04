@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for the Dotmatics::SSO::GroupInfo resource type
+
+Globals:
+  Function:
+    Timeout: 180  # docker start-up times can be long for SAM CLI
+    MemorySize: 256
+
+Resources:
+  TypeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dotmatics_sso_groupinfo.handlers.resource
+      Runtime: python3.9
+      CodeUri: src/
+      Architectures:
+        - arm64
+
+  TestEntrypoint:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dotmatics_sso_groupinfo.handlers.test_entrypoint
+      Runtime: python3.9
+      CodeUri: src/
+      Architectures:
+        - arm64
+
+

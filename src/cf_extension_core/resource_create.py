@@ -3,6 +3,7 @@ import types
 from typing import Type, Literal, TYPE_CHECKING, cast, Optional
 
 import cloudformation_cli_python_lib.exceptions
+from cloudformation_cli_python_lib import exceptions
 from cloudformation_cli_python_lib.interface import BaseModel, BaseResourceHandlerRequest
 
 from cf_extension_core.resource_base import ResourceBase as _ResourceBase
@@ -42,18 +43,16 @@ class ResourceCreate(_ResourceBase):
         request: BaseResourceHandlerRequest,
         type_name: str,
         db_resource: DynamoDBServiceResource,
-        primary_identifier: Optional[str] = None,
     ):
 
         super().__init__(
             request=request,
             db_resource=db_resource,
-            primary_identifier=primary_identifier,
+            primary_identifier=None,
             type_name=type_name,
         )
 
         self._set_resource_created_called = False
-        self._primary_identifier = primary_identifier
         self._current_model: Optional[BaseModel] = None
 
     def set_resource_created(
@@ -72,7 +71,7 @@ class ResourceCreate(_ResourceBase):
         self._primary_identifier = primary_identifier
         self._current_model = current_model
 
-    def duplicate_primary_identifier(self) -> None:
+    def _duplicate_primary_identifier(self) -> None:
         if self._db_item_exists():
             raise cloudformation_cli_python_lib.exceptions.AlreadyExists(
                 type_name=self._type_name, identifier=self._get_primary_identifier()
@@ -82,13 +81,17 @@ class ResourceCreate(_ResourceBase):
         logger.info("DynamoCreate Enter... ")
 
         # If primary identifier is already set (known with user input) - we need to check if the row already exists
-        # Use case - sometimes the primary identifier is user input instead of a created resource
         # Real world example - S3 Bucket Name...
-        if self._primary_identifier is not None:
-            self.duplicate_primary_identifier()
-        else:
-            # We havent created the primary identifier yet or its not input - so cant do anything about it yet....
-            pass
+
+        # NO CANNOT do this - If a primary identifier is known ahead of time and a reinvoke happens -
+        # this will fail here
+
+        # We only can call duplicate if we say we created another one
+        # In the example real world case - the resource provider must check to
+        # see if resource already exists with desired name/primary identifier if possible or fail out appropriately.
+
+        # if self._primary_identifier is not None:
+        #     self._duplicate_primary_identifier()
 
         logger.info("DynamoCreate Enter Complete")
         return self
@@ -102,39 +105,47 @@ class ResourceCreate(_ResourceBase):
 
         logger.info("DynamoCreate Exit...")
 
-        # End with
-        # IF success DB code should create the row if set_resource_created was called
-        # If success but set_resource_created was not called - Do nothing in Dynamo -
-        #   resource already existed - statemachine execution
-        # If error/exception be - no row created and let it propagate upwards
+        try:
 
-        # Determine if error happened (bad CR to determine if we should delete the item at the end or not.
-        # Resource was created...
+            # End with
+            # IF success DB code should create the row if set_resource_created was called
+            # If success but set_resource_created was not called - Do nothing in Dynamo -
+            #   resource already existed - statemachine execution
+            # If error/exception be - no row created and let it propagate upwards
 
-        if exception_type is None:
-            logger.info("Has Failure = False")
-            if not self._set_resource_created_called:
-                # Resource was already created - nothing to do here - no row needs to be created
-                pass
+            # Determine if error happened (bad CR to determine if we should delete the item at the end or not.
+            # Resource was created...
+
+            if exception_type is None:
+                logger.info("Has Failure = False")
+                if not self._set_resource_created_called:
+                    # Resource was already created - nothing to do here - no row needs to be created
+                    pass
+                else:
+                    # Check if row exists - if it does we need to fail out correctly
+                    if self._primary_identifier is not None:
+                        self._duplicate_primary_identifier()
+
+                    logger.info("Row being created")
+
+                    self._db_item_insert_without_overwrite(cast(BaseModel, self._current_model))
+                    return False
             else:
-                # Check if row exists - if it does we need to fail out correctly
-                if self._primary_identifier is not None:
-                    self.duplicate_primary_identifier()
 
-                logger.info("Row being created")
+                # We failed in creation logic
+                logger.info("Has Failure = True, row NOT created")
 
-                self._db_item_insert_without_overwrite(cast(BaseModel, self._current_model))
-        else:
+                # Failed during creation of resource for any number of reasons
+                # Assuming it failed with no resource actually created - only valid assumption we can make.
+                # Dont create the Row
 
-            # We failed in creation logic
-            logger.info("Has Failure = True, row NOT created")
+                # Log the internal error
+                logger.error(exception_value, exc_info=True)
 
-            # Failed during creation of resource for any number of reasons
-            # Assuming it failed with no resource actually created - only valid assumption we can make.
-            # Dont create the Row
-            pass
+                # We failed hard so we should raise a different exception that the
+                raise exceptions.HandlerInternalFailure(
+                    "CR Broke - CREATE - " + str(exception_value)
+                ) from exception_value
+        finally:
 
-        logger.info("DynamoCreate Exit Completed")
-
-        # let exception flourish always
-        return False
+            logger.info("DynamoCreate Exit Completed")

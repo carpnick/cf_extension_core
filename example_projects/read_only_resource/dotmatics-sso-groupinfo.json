@@ -1,0 +1,101 @@
+{
+    "typeName": "Dotmatics::SSO::GroupInfo",
+    "description": "Reads SSO group from AWS SSO and exposes attributes that can be used by other resources",
+    "replacementStrategy": "create_then_delete",
+    "tagging": {
+        "taggable": false
+    },
+    "sourceUrl": "https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git",
+    "definitions": {
+    },
+    "properties": {
+        "GroupName": {
+            "description": "A GroupName that exists within AWS SSO.",
+            "type": "string"
+        },
+        "IdentityStoreId": {
+            "description": "The Identity Store ID to help find the group name.",
+            "type": "string",
+            "pattern": "^d-[0-9a-f]{10}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "GroupId": {
+            "description": "The GroupId found based on the GroupName.",
+            "type": "string",
+            "pattern": "^([0-9a-f]{10}-|)[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$"
+        },
+        "GeneratedId": {
+            "description": "The generated read-only identifier.",
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "GroupName",
+        "IdentityStoreId"
+    ],
+    "readOnlyProperties": [
+        "/properties/GroupId",
+        "/properties/GeneratedId"
+    ],
+    "primaryIdentifier": [
+        "/properties/GeneratedId"
+    ],
+    "handlers": {
+        "create": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable",
+
+                "identitystore:ListGroups",
+                "identitystore:DescribeGroup"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "update": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable",
+
+                "identitystore:ListGroups",
+                "identitystore:DescribeGroup"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "read": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable",
+
+                "identitystore:DescribeGroup"
+            ],
+            "timeoutInMinutes": 2
+        },
+        "delete": {
+            "permissions": [
+                "dynamodb:CreateTable",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTable"
+            ],
+            "timeoutInMinutes": 2
+        }
+    }
+}

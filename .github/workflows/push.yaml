@@ -9,10 +9,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
+
 
       #Cache the poetry installation
       - name: Load cached Poetry installation
@@ -20,7 +21,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local  # the path depends on the OS
-          key: poetry-${{ runner.os }}-0 #Increment to break cache
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-2-${{ hashFiles('**/poetry.lock') }}-poetry #Increment to break cache
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -42,27 +43,37 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          #Change -0- to something else to bust the cache manually if needed
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-2-${{ hashFiles('**/poetry.lock') }}-deps
+
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install --no-interaction -vvv
 
       #CI portion of the Job
       - name: Static Analysis and Code Formatting
         run: |
           source .venv/bin/activate
+          
+          echo "Run stubtest: stubtest cf_extension_core"
+          stubtest cf_extension_core
+          
+          
           echo "Running mypy"
-          mypy src/
+          mypy src/  --strict
+          mypy tests/ --strict
+          
           echo "Running flake8"
-          flake8 --max-line-length 120 src/
+          flake8 --max-line-length 120 src/ tests/
+          
           echo "Running black"
-          black src/ -l 120 --check
+          black src/ tests/ -l 120 --check
 
       - name: Unit Tests
         run: |
           echo "Running pytest"   
           source .venv/bin/activate
-          pytest  --cov-branch --cov=src/ tests/ --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
+          pytest  --cov-branch --cov=src/ tests/unit --log-cli-level=DEBUG --junit-xml=junit.xml --cov-report=xml --cov-report=html:ci_coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -72,6 +83,9 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
           verbose: true
+      - name: Build
+        run: |
+          poetry build
 
   publish:
     needs: build
@@ -88,7 +102,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local  # the path depends on the OS
-          key: poetry-${{ runner.os }}-0 #Increment to break cache
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-1-${{ hashFiles('**/poetry.lock') }}-poetry #Increment to break cache
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -110,7 +124,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-1-${{ hashFiles('**/poetry.lock') }}-deps
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
