@@ -116,7 +116,7 @@ def test_create_read_delete_ro() -> None:
         db_resource=ret_dynamodb_resource(),
         primary_identifier=model.GeneratedReadOnlyId,
     ) as DB:
-
+        DB.set_resource_deleted()
         # You are supposed to be able to delete the resource with just the primary identifier
         # RO resource
         pass
@@ -335,7 +335,7 @@ def test_delete_create() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        pass
+        DB.set_resource_deleted()
 
     with dynamo.create_resource(
         request=handler_request,
@@ -384,7 +384,7 @@ def test_delete_update() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        pass
+        DB.set_resource_deleted()
 
     try:
         with dynamo.update_resource(
@@ -435,7 +435,7 @@ def test_create_delete_read() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        pass
+        DB.set_resource_deleted()
 
     try:
         with dynamo.read_resource(
@@ -492,7 +492,7 @@ def test_create_delete_list() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        pass
+        DB.set_resource_deleted()
 
     with dynamo.list_resource(
         request=handler_request,
@@ -535,7 +535,7 @@ def test_create_delete_delete() -> None:
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
     ) as DB:
-        pass
+        DB.set_resource_deleted()
 
     try:
         with dynamo.delete_resource(
@@ -544,7 +544,7 @@ def test_create_delete_delete() -> None:
             type_name=return_type_name(),
             db_resource=ret_dynamodb_resource(),
         ):
-            pass
+            DB.set_resource_deleted()
 
         assert False
     except exceptions.NotFound:
@@ -811,5 +811,9 @@ if __name__ == "__main__":
     ]
 
     for test in tests:
-        DynamoTableCreator(ret_dynamodb_resource()).delete_table()
+        import random
+        if random.randint(1, 10) <= 5:
+            DynamoTableCreator(ret_dynamodb_resource()).create_standard_table()
+
         test()
+        DynamoTableCreator(ret_dynamodb_resource()).delete_table()
