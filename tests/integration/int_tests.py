@@ -787,7 +787,7 @@ if __name__ == "__main__":
     # Use a special TABLE? - HACK alert
     DynamoDBValues.TABLE_NAME = "aut-TEST"
 
-    boto3.setup_default_session(profile_name="CT", region_name="eu-west-2")
+    boto3.setup_default_session(profile_name="SDLC", region_name="us-east-2")
 
     tests: typing.List[typing.Callable[[], None]] = [
         lambda: test_create_read_delete_ro(),
