@@ -534,8 +534,8 @@ def test_create_delete_delete() -> None:
         request=handler_request,
         type_name=return_type_name(),
         db_resource=ret_dynamodb_resource(),
-    ) as DB:
-        DB.set_resource_deleted()
+    ) as DB2:
+        DB2.set_resource_deleted()
 
     try:
         with dynamo.delete_resource(
@@ -543,8 +543,8 @@ def test_create_delete_delete() -> None:
             request=handler_request,
             type_name=return_type_name(),
             db_resource=ret_dynamodb_resource(),
-        ):
-            DB.set_resource_deleted()
+        ) as DB3:
+            DB3.set_resource_deleted()
 
         assert False
     except exceptions.NotFound:
@@ -812,6 +812,7 @@ if __name__ == "__main__":
 
     for test in tests:
         import random
+
         if random.randint(1, 10) <= 5:
             DynamoTableCreator(ret_dynamodb_resource()).create_standard_table()
 
