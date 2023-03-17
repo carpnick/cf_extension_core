@@ -31,7 +31,6 @@ class DynamoTableCreator:
         try:
             self._client.meta.client.describe_table(TableName=DynamoDBValues.TABLE_NAME)
             logger.debug("Table Exists")
-            self._wait_for_table_to_be_active()
             return True
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
@@ -45,6 +44,7 @@ class DynamoTableCreator:
         logger.debug("In create_standard_table")
 
         if self.table_exists():
+            self._wait_for_table_to_be_active()
             logger.debug("Exit create_standard_table")
             return
 
