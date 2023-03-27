@@ -1,9 +1,0 @@
-pytest
-pytest-cov
-pytest-mock
-boto3-stubs[essential]
-boto3-stubs[identitystore]
-mypy
-flake8
-black
-cfn-lint
