@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "cf_extension_core"
 # NickC - This will always be out of date.  CI modifies this dynamically
-version = "0.2.6"
+version = "0.2.7"
 description = "Provides common functionality for Custom resources in CloudFormation."
 authors = ["Nick Carpenter"]
 license = "MIT"
