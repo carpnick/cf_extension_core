@@ -12,7 +12,8 @@ include = ["src/cf_extension_core/*.pyi"]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 boto3 = "^1.26.50"
-cloudformation-cli-python-lib = "^2.1.14"
+cloudformation-cli-python-lib = "^2.1.16"
+cryptography = "^41.0.4"
 
 
 
